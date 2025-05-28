@@ -1,21 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: product-service
+  name: cloud-config
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: product-service
+      app: cloud-config
   template:
     metadata:
       labels:
-        app: product-service
+        app: cloud-config
     spec:
       containers:
-        - name: product-service
-          image: camilobueno/product-service:latest
+        - name: cloud-config
+          image: camilobueno/cloud-config:latest
           imagePullPolicy: Always
-
           ports:
-            - containerPort: 8500
+            - containerPort: 9296

@@ -1,21 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: product-service
+  name: payment-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: product-service
+      app: payment-service
   template:
     metadata:
       labels:
-        app: product-service
+        app: payment-service
     spec:
       containers:
-        - name: product-service
-          image: camilobueno/product-service:latest
+        - name: payment-service
+          image: camilobueno/payment-service:latest
           imagePullPolicy: Always
-
           ports:
-            - containerPort: 8500
+            - containerPort: 8400
