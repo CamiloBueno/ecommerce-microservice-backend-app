@@ -14,7 +14,7 @@ pipeline {
 
         stage('Build with Maven') {
             steps {
-                bat 'mvn clean package -DskipTests'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
@@ -31,7 +31,7 @@ pipeline {
                     ]
 
                     for (service in services) {
-                        bat """
+                        sh """
                             cd ${service}
                             docker build -t camilobueno/${service}:latest .
                             echo ${DOCKER_HUB_CREDENTIALS_PSW} | docker login -u ${DOCKER_HUB_CREDENTIALS_USR} --password-stdin
@@ -45,7 +45,7 @@ pipeline {
 
         stage('Deploy to Minikube') {
             steps {
-                bat 'kubectl apply -f k8s/'
+                sh 'kubectl apply -f k8s/'
             }
         }
     }
