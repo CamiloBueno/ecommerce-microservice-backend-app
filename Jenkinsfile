@@ -44,14 +44,13 @@ pipeline {
         stage('Push Docker Images') {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'dockerhub-password', variable: 'DOCKERHUB_PASS')]) {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
                         bat """
-                            echo %DOCKERHUB_PASS% | docker login -u ${DOCKERHUB_USER} --password-stdin
+                            echo %DOCKERHUB_PASS% | docker login -u %DOCKERHUB_USER% --password-stdin
                         """
-
                         def services = ['user-service', 'product-service', 'order-service', 'payment-service', 'api-gateway']
                         for (service in services) {
-                            bat "docker push ${DOCKERHUB_USER}/${service}:latest"
+                            bat "docker push %DOCKERHUB_USER%/${service}:latest"
                         }
                     }
                 }
