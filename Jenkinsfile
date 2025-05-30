@@ -1,8 +1,15 @@
 pipeline {
     agent any
 
+    tools {
+        // Asegúrate de tener estas herramientas configuradas en Jenkins -> Global Tool Configuration
+        maven 'mvn'
+        jdk 'jdk11'
+    }
+
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials')
+        DOCKERHUB_USER = 'camilobueno'
+        DOCKERHUB_CREDENTIALS = 'pwd'
     }
 
     stages {
@@ -12,50 +19,44 @@ pipeline {
             }
         }
 
-        stage('Build with Maven') {
-            steps {
-                sh 'mvn clean package -DskipTests'
-            }
-        }
-
-        stage('Build and Push Docker Images') {
+        stage('Build Spring Boot Services') {
             steps {
                 script {
-                    def services = [
-                        'api-gateway',
-                        'cloud-config',
-                        'order-service',
-                        'payment-service',
-                        'product-service',
-                        'user-service'
-                    ]
+                    def services = ['user-service', 'product-service', 'order-service', 'payment-service', 'api-gateway']
 
                     for (service in services) {
-                        sh """
-                            cd ${service}
-                            docker build -t camilobueno/${service}:latest .
-                            echo ${DOCKER_HUB_CREDENTIALS_PSW} | docker login -u ${DOCKER_HUB_CREDENTIALS_USR} --password-stdin
-                            docker push camilobueno/${service}:latest
-                            cd ..
-                        """
+                        dir("${service}") {
+                            bat 'mvn clean package -DskipTests'
+                        }
                     }
                 }
             }
         }
 
-        stage('Deploy to Minikube') {
+        stage('Build Docker Images') {
             steps {
-                sh 'kubectl apply -f k8s/'
+                script {
+                    def services = ['user-service', 'product-service', 'order-service', 'payment-service', 'api-gateway']
+
+                    for (service in services) {
+                        bat "docker build -t ${DOCKERHUB_USER}/${service}:latest ./${service}"
+                    }
+                }
             }
         }
-    }
 
-    post {
-        success {
-            echo 'Pipeline completed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed.'
+        stage('Push Docker Images') {
+            steps {
+                script {
+                    bat "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+
+                    def services = ['user-service', 'product-service', 'order-service', 'payment-service', 'api-gateway']
+
+                    for (service in services) {
+                        bat "docker push ${DOCKERHUB_USER}/${service}:latest"
+                    }
+                }
+            }
         }
     }
 }
