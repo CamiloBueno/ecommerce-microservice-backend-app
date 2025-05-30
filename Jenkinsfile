@@ -48,7 +48,7 @@ pipeline {
         stage('Push Docker Images') {
             steps {
                 script {
-                    bat "echo ${DOCKERHUB_CREDENTIALS} | docker login -u ${DOCKERHUB_USER} --password-stdin"
+                    bat "docker login -u ${DOCKERHUB_USER} -p ${DOCKERHUB_CREDENTIALS}"
 
                     def services = ['user-service', 'product-service', 'order-service', 'payment-service', 'api-gateway']
 
