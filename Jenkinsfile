@@ -17,6 +17,27 @@ pipeline {
             }
         }
 
+        stage('Run Unit and Integration Tests') {
+            steps {
+                script {
+                    def services = ['user-service', 'product-service']
+                    for (service in services) {
+                        dir("${service}") {
+                            bat 'mvn test'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Run E2E Tests') {
+            steps {
+                dir('e2e-tests') { // Ajusta el nombre si tu módulo se llama diferente
+                    bat 'mvn test'
+                }
+            }
+        }
+
         stage('Build Spring Boot Services') {
             steps {
                 script {
