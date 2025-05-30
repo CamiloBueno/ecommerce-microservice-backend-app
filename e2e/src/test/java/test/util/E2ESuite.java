@@ -84,9 +84,10 @@ public class E2ESuite {
                     userServiceContainer,
                     productServiceContainer,
                     orderServiceContainer,
-                    paymentServiceContainer,
                     favouriteServiceContainer
             )).join();
+
+                Startables.deepStart(Stream.of(paymentServiceContainer)).join();
 
             Map<String, Object> props = Map.of(
                     "zipkin.url", "http://" + zipkinContainer.getHost() + ":" + zipkinContainer.getMappedPort(9411),
