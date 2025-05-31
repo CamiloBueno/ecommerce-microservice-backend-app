@@ -40,24 +40,9 @@ pipeline {
         stage('Build Spring Boot Services') {
             steps {
                 script {
-                    def services = [
-                        'zipkin',
-                        'service-discovery',
-                        'cloud-config',
-                        'api-gateway',
-                        'proxy-client',
-                        'order-service',
-                        'payment-service',
-                        'product-service',
-                        'shipping-service',
-                        'user-service',
-                        'favourite-service'
-                    ]
-                    for (service in services) {
-                        dir("${service}") {
-                            bat 'mvn clean package -DskipTests'
-                        }
-                    }
+
+                    bat 'mvn clean package -DskipTests'
+
                 }
             }
         }
@@ -66,7 +51,7 @@ pipeline {
             steps {
                 script {
                     def services = [
-                        'zipkin',
+
                         'service-discovery',
                         'cloud-config',
                         'api-gateway',
