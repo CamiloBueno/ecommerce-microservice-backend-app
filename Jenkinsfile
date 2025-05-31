@@ -101,9 +101,7 @@ pipeline {
                         'order-service-kube',
                         'payment-service-kube',
                         'product-service-kube',
-                        'shipping-service-kube',
-                        'user-service-kube',
-                        'favourite-service-kube'
+                        'user-service-kube'
                     ]
                     for (service in yamls) {
                         bat "kubectl apply -f k8s/${service}/ --kubeconfig=%KUBECONFIG%"
