@@ -101,19 +101,19 @@ pipeline {
                 script {
                     def yamls = [
                         'zipkin',
-                        'service-discovery',
-                        'cloud-config',
-                        'api-gateway',
-                        'proxy-client',
-                        'order-service',
-                        'payment-service',
-                        'product-service',
-                        'shipping-service',
-                        'user-service',
-                        'favourite-service'
+                        'service-discovery-kube',
+                        'cloud-config-kube',
+                        'api-gateway-kube',
+                        'proxy-client-kube',
+                        'order-service-kube',
+                        'payment-service-kube',
+                        'product-service-kube',
+                        'shipping-service-kube',
+                        'user-service-kube',
+                        'favourite-service-kube'
                     ]
                     for (service in yamls) {
-                        bat "kubectl apply -f k8s/${service}-deployment.yaml"
+                        bat "kubectl apply -f k8s/${service}/"
                     }
                 }
             }
