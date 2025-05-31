@@ -100,7 +100,7 @@ pipeline {
             steps {
                 script {
                     def yamls = [
-                        'zipkin',
+                        'zipkin-kube',
                         'service-discovery-kube',
                         'cloud-config-kube',
                         'api-gateway-kube',
