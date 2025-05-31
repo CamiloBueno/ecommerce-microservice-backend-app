@@ -98,7 +98,6 @@ pipeline {
                         'service-discovery-kube',
                         'cloud-config-kube',
                         'api-gateway-kube',
-                        'proxy-client-kube',
                         'order-service-kube',
                         'payment-service-kube',
                         'product-service-kube',
