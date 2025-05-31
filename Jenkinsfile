@@ -8,6 +8,7 @@ pipeline {
 
     environment {
         DOCKERHUB_USER = 'camilobueno'
+        KUBECONFIG = 'C:\\Users\\camil\\.kube\\config'
     }
 
     stages {
@@ -33,17 +34,12 @@ pipeline {
         stage('Run E2E Tests') {
             steps {
                 bat 'mvn verify -pl e2e'
-
             }
         }
 
         stage('Build Spring Boot Services') {
             steps {
-                script {
-
-                    bat 'mvn clean package -DskipTests'
-
-                }
+                bat 'mvn clean package -DskipTests'
             }
         }
 
@@ -51,7 +47,6 @@ pipeline {
             steps {
                 script {
                     def services = [
-
                         'service-discovery',
                         'cloud-config',
                         'api-gateway',
@@ -76,7 +71,6 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
                         bat "echo %DOCKERHUB_PASS% | docker login -u %DOCKERHUB_USER% --password-stdin"
                         def services = [
-
                             'service-discovery',
                             'cloud-config',
                             'api-gateway',
@@ -113,7 +107,7 @@ pipeline {
                         'favourite-service-kube'
                     ]
                     for (service in yamls) {
-                        bat "kubectl apply -f k8s/${service}/"
+                        bat "kubectl apply -f k8s/${service}/ --kubeconfig=%KUBECONFIG%"
                     }
                 }
             }
