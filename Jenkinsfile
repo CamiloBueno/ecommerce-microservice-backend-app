@@ -32,7 +32,7 @@ pipeline {
 
         stage('Run E2E Tests') {
             steps {
-                dir('e2e-tests') { // Ajusta el nombre si tu módulo se llama diferente
+                dir('e2e') { // Ajusta el nombre si tu módulo se llama diferente
                     bat 'mvn test'
                 }
             }
