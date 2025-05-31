@@ -32,9 +32,8 @@ pipeline {
 
         stage('Run E2E Tests') {
             steps {
-                dir('e2e') {
-                    bat 'mvn verify -pl e2e'
-                }
+                bat 'mvn verify -pl e2e'
+
             }
         }
 
