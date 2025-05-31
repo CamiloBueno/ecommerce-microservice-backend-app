@@ -20,13 +20,14 @@ public class PaymentServiceE2ETest extends E2ESuite {
     private String paymentServiceUrl;
 
     @Test
-    void shouldGetAllPayments() {
-        String url = paymentServiceUrl + "/payment-service/api/payments";
-        ResponseEntity<String> response = restFacade.get(url, String.class);
+    void shouldDeletePaymentById() {
+        int paymentId = 1;
+        String url = paymentServiceUrl + "/payment-service/api/payments/" + paymentId;
+        ResponseEntity<String> response = restFacade.delete(url, String.class);
 
-        System.out.println("All Payments Response: " + response.getBody());
-        assertTrue(response.getStatusCode().is2xxSuccessful(), "Failed to get all payments");
-    }
+        System.out.println("Delete Payment Response: " + response.getBody());
+        assertTrue(response.getStatusCode().is2xxSuccessful(), "Failed to delete paymentByID");
+}
 
     @Test
     void shouldGetPaymentById() {

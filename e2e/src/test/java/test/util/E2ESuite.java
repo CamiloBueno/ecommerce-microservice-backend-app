@@ -57,7 +57,7 @@ public class E2ESuite {
                     .waitingFor(Wait.forHttp("/actuator/health").forStatusCode(200))
                     .withLogConsumer(new Slf4jLogConsumer(org.slf4j.LoggerFactory.getLogger("service-discovery")));
 
-            cloudConfigContainer = new GenericContainer<>("cloud-config:0.1.0")
+            cloudConfigContainer = new GenericContainer<>("camilobueno/cloud-config:latest")
                     .withNetwork(network)
                     .withNetworkAliases("cloud-config-container")
                     .withExposedPorts(9296)
