@@ -117,7 +117,7 @@ pipeline {
                     bat "docker network inspect locust-net || docker network create locust-net"
 
                     def services = [
-                        'zipkin',
+                        'openzipkin/zipkin',
                         'service-discovery',
                         'cloud-config',
                         'api-gateway',
