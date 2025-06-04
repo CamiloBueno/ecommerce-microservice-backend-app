@@ -113,25 +113,25 @@ pipeline {
         stage('Run Locust Load Tests') {
             steps {
                 script {
-                    // Crear la red solo si no existe
                     bat "docker network inspect locust-net || docker network create locust-net"
 
                     def services = [
-                        'openzipkin/zipkin',
-                        'service-discovery',
-                        'cloud-config',
-                        'api-gateway',
-                        'proxy-client',
-                        'order-service',
-                        'payment-service',
-                        'product-service',
-                        'shipping-service',
-                        'user-service',
-                        'favourite-service'
+                        [name: 'zipkin', image: 'openzipkin/zipkin'],
+                        [name: 'service-discovery', image: "${DOCKERHUB_USER}/service-discovery:latest"],
+                        [name: 'cloud-config', image: "${DOCKERHUB_USER}/cloud-config:latest"],
+                        [name: 'api-gateway', image: "${DOCKERHUB_USER}/api-gateway:latest"],
+                        [name: 'proxy-client', image: "${DOCKERHUB_USER}/proxy-client:latest"],
+                        [name: 'order-service', image: "${DOCKERHUB_USER}/order-service:latest"],
+                        [name: 'payment-service', image: "${DOCKERHUB_USER}/payment-service:latest"],
+                        [name: 'product-service', image: "${DOCKERHUB_USER}/product-service:latest"],
+                        [name: 'shipping-service', image: "${DOCKERHUB_USER}/shipping-service:latest"],
+                        [name: 'user-service', image: "${DOCKERHUB_USER}/user-service:latest"],
+                        [name: 'favourite-service', image: "${DOCKERHUB_USER}/favourite-service:latest"]
                     ]
-                    for (service in services) {
-                        bat "docker run -d --rm --network locust-net --name ${service}-test ${DOCKERHUB_USER}/${service}:latest"
-                        echo "Esperando 10 segundos para que ${service}-test esté listo..."
+
+                    for (svc in services) {
+                        bat "docker run -d --rm --network locust-net --name ${svc.name}-test ${svc.image}"
+                        echo "Esperando 10 segundos para que ${svc.name}-test esté listo..."
                         bat "timeout /T 10 /NOBREAK"
                     }
 
@@ -144,11 +144,10 @@ pipeline {
                         """
                     }
 
-                    for (service in services) {
-                        bat "docker stop ${service}-test || exit 0"
+                    for (svc in services) {
+                        bat "docker stop ${svc.name}-test || exit 0"
                     }
 
-                    // Eliminar la red después de las pruebas
                     bat "docker network rm locust-net || exit 0"
                 }
             }
