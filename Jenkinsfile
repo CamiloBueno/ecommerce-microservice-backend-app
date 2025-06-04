@@ -131,18 +131,22 @@ pipeline {
 
                     for (svc in services) {
                         bat "docker run -d --rm --network locust-net --name ${svc.name}-test ${svc.image}"
-                        echo "Esperando que ${svc.name} dé HTTP 200..."
-                        powershell ""
-                            for ($i = 0; $i -lt 30; $i++) {
+                        echo "Waiting for ${svc.name} to be healthy..."
+
+                        bat """
+                            powershell -Command \"
+                            \$maxAttempts = 30
+                            for (\$i = 0; \$i -lt \$maxAttempts; \$i++) {
                                 try {
-                                    $resp = Invoke-WebRequest -Uri '${svc.healthUrl}' -UseBasicParsing -TimeoutSec 3
-                                    if ($resp.StatusCode -eq 200) {
-                                        Write-Host '${svc.name} está listo.'
+                                    \$response = Invoke-WebRequest -Uri '${svc.healthUrl}' -UseBasicParsing
+                                    if (\$response.StatusCode -eq 200) {
+                                        Write-Host '${svc.name} is healthy.'
                                         break
                                     }
                                 } catch {}
                                 Start-Sleep -Seconds 2
                             }
+                            \"
                         """
                     }
 
