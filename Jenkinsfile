@@ -79,7 +79,7 @@ pipeline {
         stage('Push Docker Images to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
-                    bat "echo %DOCKERHUB_PASS% | docker login -u %DOCKERHUB_USER% --password-stdin"
+                    bat "docker login -u %DOCKERHUB_USER% -p %DOCKERHUB_PASS%"
                     script {
                         SERVICES.split().each { service ->
                             bat "docker push %DOCKERHUB_USER%/${service}:latest"
