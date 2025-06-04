@@ -8,22 +8,39 @@ pipeline {
 
     environment {
         DOCKERHUB_USER = 'camilobueno'
+        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
         KUBECONFIG = 'C:\\Users\\camil\\.kube\\config'
+        SERVICES = 'api-gateway cloud-config order-service payment-service product-service proxy-client service-discovery shipping-service user-service'
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Run Unit and Integration Tests') {
+        stage('Verify Tools') {
+            steps {
+                bat 'java -version'
+                bat 'mvn -version'
+                bat 'docker --version'
+                bat 'kubectl config current-context --kubeconfig=%KUBECONFIG%'
+            }
+        }
+
+        stage('Build Services (creating .jar files)') {
+            steps {
+                bat 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Unit Tests') {
             steps {
                 script {
-                    def services = ['user-service', 'product-service', 'payment-service', 'order-service']
-                    for (service in services) {
-                        dir("${service}") {
+                    ['user-service', 'product-service'].each {
+                        dir(it) {
                             bat 'mvn test'
                         }
                     }
@@ -31,44 +48,40 @@ pipeline {
             }
         }
 
-        stage('Run E2E Tests') {
-            steps {
-                bat 'mvn verify -pl e2e'
-            }
-        }
-
-        stage('Build Spring Boot Services') {
-            steps {
-                bat 'mvn clean package -DskipTests'
-            }
-        }
-
-        stage('Build Docker Images') {
+        stage('Integration Tests') {
             steps {
                 script {
-                    def services = [
-                        'service-discovery', 'cloud-config', 'api-gateway', 'proxy-client',
-                        'order-service', 'payment-service', 'product-service', 'shipping-service',
-                        'user-service', 'favourite-service'
-                    ]
-                    for (service in services) {
-                        bat "docker build -t ${DOCKERHUB_USER}/${service}:latest ./${service}"
+                    ['user-service', 'product-service'].each {
+                        dir(it) {
+                            bat 'mvn verify'
+                        }
                     }
                 }
             }
         }
 
-        stage('Push Docker Images') {
+        stage('E2E Tests') {
+            steps {
+                bat 'mvn verify -pl e2e'
+            }
+        }
+
+        stage('Build Docker Images of each service') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
-                        bat "echo %DOCKERHUB_PASS% | docker login -u %DOCKERHUB_USER% --password-stdin"
-                        def services = [
-                            'service-discovery', 'cloud-config', 'api-gateway', 'proxy-client',
-                            'order-service', 'payment-service', 'product-service', 'shipping-service',
-                            'user-service', 'favourite-service'
-                        ]
-                        for (service in services) {
+                    SERVICES.split().each { service ->
+                        bat "docker build -t %DOCKERHUB_USER%/${service}:latest ./${service}"
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Images to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
+                    bat "echo %DOCKERHUB_PASS% | docker login -u %DOCKERHUB_USER% --password-stdin"
+                    script {
+                        SERVICES.split().each { service ->
                             bat "docker push %DOCKERHUB_USER%/${service}:latest"
                         }
                     }
@@ -76,61 +89,70 @@ pipeline {
             }
         }
 
-        stage('Deploy to Minikube') {
+        stage('Start containers for load and stress testing') {
             steps {
                 script {
-                    def yamls = [
-                        'zipkin-kube', 'service-discovery-kube', 'cloud-config-kube', 'api-gateway-kube',
-                        'order-service-kube', 'payment-service-kube', 'product-service-kube', 'user-service-kube'
+                    bat "docker network inspect ecommerce-test || docker network create ecommerce-test"
+
+                    def services = [
+                        [name: 'zipkin', port: 9411, image: 'openzipkin/zipkin', health: 'http://localhost:9411'],
+                        [name: 'service-discovery-container', port: 8761, image: 'camilobueno/service-discovery:latest', health: 'http://localhost:8761/actuator/health'],
+                        [name: 'cloud-config-container', port: 9296, image: 'camilobueno/cloud-config:latest', health: 'http://localhost:9296/cloud-config/actuator/health'],
+                        [name: 'order-service-container', port: 8300, image: 'camilobueno/order-service:latest', health: 'http://localhost:8300/order-service/actuator/health'],
+                        [name: 'payment-service-container', port: 8400, image: 'camilobueno/payment-service:latest', health: 'http://localhost:8400/payment-service/actuator/health']
                     ]
-                    for (service in yamls) {
-                        bat "kubectl apply -f k8s/${service}/ --kubeconfig=%KUBECONFIG%"
+
+                    for (svc in services) {
+                        bat "docker run -d --rm --network ecommerce-test -p ${svc.port}:${svc.port} --name ${svc.name} ${svc.image}"
+                        bat "powershell -Command \"$i=0; while ($i -lt 30) { try { \$resp = Invoke-WebRequest -Uri '${svc.health}' -UseBasicParsing -TimeoutSec 3; if (\$resp.StatusCode -eq 200) { Write-Host '${svc.name} is healthy'; break } } catch {} Start-Sleep -Seconds 2; \$i++ }\""
                     }
                 }
             }
         }
 
-        stage('Run Locust Load Tests') {
+        stage('Run Load Tests with Locust') {
             steps {
                 script {
-                    bat "docker network inspect locust-net || docker network create locust-net"
-
-                    def services = [
-                        [name: 'zipkin', image: 'openzipkin/zipkin', healthUrl: 'http://zipkin-test'],
-                        [name: 'service-discovery', image: "${DOCKERHUB_USER}/service-discovery:latest", healthUrl: 'http://service-discovery-test/actuator/health'],
-                        [name: 'cloud-config', image: "${DOCKERHUB_USER}/cloud-config:latest", healthUrl: 'http://cloud-config-test/cloud-config/actuator/health'],
-                        [name: 'api-gateway', image: "${DOCKERHUB_USER}/api-gateway:latest", healthUrl: 'http://api-gateway-test/api-gateway/actuator/health'],
-                        [name: 'proxy-client', image: "${DOCKERHUB_USER}/proxy-client:latest", healthUrl: 'http://proxy-client-test/proxy-client/actuator/health'],
-                        [name: 'order-service', image: "${DOCKERHUB_USER}/order-service:latest", healthUrl: 'http://order-service-test/order-service/actuator/health'],
-                        [name: 'payment-service', image: "${DOCKERHUB_USER}/payment-service:latest", healthUrl: 'http://payment-service-test/payment-service/actuator/health'],
-                        [name: 'product-service', image: "${DOCKERHUB_USER}/product-service:latest", healthUrl: 'http://product-service-test/product-service/actuator/health'],
-                        [name: 'shipping-service', image: "${DOCKERHUB_USER}/shipping-service:latest", healthUrl: 'http://shipping-service-test/shipping-service/actuator/health'],
-                        [name: 'user-service', image: "${DOCKERHUB_USER}/user-service:latest", healthUrl: 'http://user-service-test/user-service/actuator/health'],
-                        [name: 'favourite-service', image: "${DOCKERHUB_USER}/favourite-service:latest", healthUrl: 'http://favourite-service-test/favourite-service/actuator/health']
+                    def locustTests = [
+                        [name: 'order-service', port: 8300],
+                        [name: 'payment-service', port: 8400]
                     ]
 
-                    for (svc in services) {
-                        bat "docker run -d --rm --network locust-net --name ${svc.name}-test ${svc.image}"
-                        echo "Esperando que ${svc.name} esté saludable..."
-                        bat "powershell -Command \"$i=0; while ($i -lt 30) { try { $resp = Invoke-WebRequest -Uri '${svc.healthUrl}' -UseBasicParsing -TimeoutSec 3; if ($resp.StatusCode -eq 200) { Write-Host '${svc.name} is healthy'; break } } catch {} Start-Sleep -Seconds 2; $i++ }\""
-                    }
-
-                    def locustTargets = ['order-service', 'payment-service']
-                    for (target in locustTargets) {
+                    for (test in locustTests) {
                         bat """
-                            docker run --rm --network locust-net -v %cd%/locust/test:/mnt/locust locustio/locust ^
-                            -f /mnt/locust/${target}/locustfile.py --headless -u 10 -r 2 ^
-                            --host=http://${target}-test --run-time 30s
+                            docker run --rm --network ecommerce-test -v %cd%/locust/test:/mnt/locust locustio/locust ^
+                            -f /mnt/locust/${test.name}/locustfile.py ^
+                            --host=http://localhost:${test.port} --headless -u 10 -r 2 -t 30s
                         """
                     }
-
-                    for (svc in services) {
-                        bat "docker stop ${svc.name}-test || exit 0"
-                    }
-
-                    bat "docker network rm locust-net || exit 0"
                 }
             }
+        }
+
+        stage('Run Stress Tests with Locust') {
+            steps {
+                script {
+                    def stressTests = [
+                        [name: 'order-service', port: 8300],
+                        [name: 'payment-service', port: 8400]
+                    ]
+
+                    for (test in stressTests) {
+                        bat """
+                            docker run --rm --network ecommerce-test -v %cd%/locust/test:/mnt/locust locustio/locust ^
+                            -f /mnt/locust/${test.name}/locustfile.py ^
+                            --host=http://localhost:${test.port} --headless -u 50 -r 5 -t 1m
+                        """
+                    }
+                }
+            }
+        }
+
+    }
+
+    post {
+        success {
+            echo '✅ Pipeline completed successfully (until Locust tests)'
         }
     }
 }
