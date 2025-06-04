@@ -113,7 +113,8 @@ pipeline {
         stage('Run Locust Load Tests') {
             steps {
                 script {
-                    bat "docker network create locust-net"
+                    // Crear la red solo si no existe
+                    bat "docker network inspect locust-net || docker network create locust-net"
 
                     def services = [
                         'zipkin',
@@ -147,7 +148,8 @@ pipeline {
                         bat "docker stop ${service}-test || exit 0"
                     }
 
-                    bat "docker network rm locust-net"
+                    // Eliminar la red después de las pruebas
+                    bat "docker network rm locust-net || exit 0"
                 }
             }
         }
