@@ -132,9 +132,20 @@ pipeline {
                     for (svc in services) {
                         bat "docker run -d --rm --network locust-net --name ${svc.name}-test ${svc.image}"
                         echo "Esperando que ${svc.name} esté saludable..."
-                        bat """
-                            powershell -Command "$i=0; while (\$i -lt 30) { try { if ((Invoke-WebRequest -Uri '${svc.healthUrl}' -UseBasicParsing).StatusCode -eq 200) { Write-Host '${svc.name} is healthy'; break } } catch {}; Start-Sleep -Seconds 2; \$i++ }"
+                        def healthCheck = """
+                            powershell -Command "\$i=0; while (\$i -lt 30) {
+                                try {
+                                    \$resp = Invoke-WebRequest -Uri '${svc.healthUrl}' -UseBasicParsing -TimeoutSec 3;
+                                    if (\$resp.StatusCode -eq 200) {
+                                        Write-Host '${svc.name} is healthy';
+                                        break
+                                    }
+                                } catch {}
+                                Start-Sleep -Seconds 2
+                                \$i++
+                            }"
                         """
+                        bat healthCheck
                     }
 
                     def locustTargets = ['order-service', 'payment-service']
