@@ -113,30 +113,40 @@ pipeline {
         stage('Run Locust Load Tests') {
             steps {
                 script {
-                    // Crear red solo si no existe
                     bat "docker network inspect locust-net || docker network create locust-net"
 
                     def services = [
-                        [name: 'zipkin', image: 'openzipkin/zipkin'],
-                        [name: 'service-discovery', image: "${DOCKERHUB_USER}/service-discovery:latest"],
-                        [name: 'cloud-config', image: "${DOCKERHUB_USER}/cloud-config:latest"],
-                        [name: 'api-gateway', image: "${DOCKERHUB_USER}/api-gateway:latest"],
-                        [name: 'proxy-client', image: "${DOCKERHUB_USER}/proxy-client:latest"],
-                        [name: 'order-service', image: "${DOCKERHUB_USER}/order-service:latest"],
-                        [name: 'payment-service', image: "${DOCKERHUB_USER}/payment-service:latest"],
-                        [name: 'product-service', image: "${DOCKERHUB_USER}/product-service:latest"],
-                        [name: 'shipping-service', image: "${DOCKERHUB_USER}/shipping-service:latest"],
-                        [name: 'user-service', image: "${DOCKERHUB_USER}/user-service:latest"],
-                        [name: 'favourite-service', image: "${DOCKERHUB_USER}/favourite-service:latest"]
+                        [name: 'zipkin', image: 'openzipkin/zipkin', healthUrl: 'http://zipkin-test'],
+                        [name: 'service-discovery', image: "${DOCKERHUB_USER}/service-discovery:latest", healthUrl: 'http://service-discovery-test/actuator/health'],
+                        [name: 'cloud-config', image: "${DOCKERHUB_USER}/cloud-config:latest", healthUrl: 'http://cloud-config-test/actuator/health'],
+                        [name: 'api-gateway', image: "${DOCKERHUB_USER}/api-gateway:latest", healthUrl: 'http://api-gateway-test/actuator/health'],
+                        [name: 'proxy-client', image: "${DOCKERHUB_USER}/proxy-client:latest", healthUrl: 'http://proxy-client-test/actuator/health'],
+                        [name: 'order-service', image: "${DOCKERHUB_USER}/order-service:latest", healthUrl: 'http://order-service-test/actuator/health'],
+                        [name: 'payment-service', image: "${DOCKERHUB_USER}/payment-service:latest", healthUrl: 'http://payment-service-test/actuator/health'],
+                        [name: 'product-service', image: "${DOCKERHUB_USER}/product-service:latest", healthUrl: 'http://product-service-test/actuator/health'],
+                        [name: 'shipping-service', image: "${DOCKERHUB_USER}/shipping-service:latest", healthUrl: 'http://shipping-service-test/actuator/health'],
+                        [name: 'user-service', image: "${DOCKERHUB_USER}/user-service:latest", healthUrl: 'http://user-service-test/actuator/health'],
+                        [name: 'favourite-service', image: "${DOCKERHUB_USER}/favourite-service:latest", healthUrl: 'http://favourite-service-test/actuator/health']
                     ]
 
                     for (svc in services) {
                         bat "docker run -d --rm --network locust-net --name ${svc.name}-test ${svc.image}"
-                        echo "Esperando 10 segundos para que ${svc.name}-test esté listo..."
-                        bat "ping -n 11 127.0.0.1 > nul"
+
+                        echo "Esperando que ${svc.name} dé HTTP 200..."
+
+                        bat """
+                            for /L %%i in (1,1,30) do (
+                              curl -s -o nul -w "%%{http_code}" ${svc.healthUrl} | findstr 200 > nul
+                              if !errorlevel! == 0 (
+                                echo ${svc.name} está listo.
+                                goto listo
+                              )
+                              timeout /T 2 > nul
+                            )
+                            :listo
+                        """
                     }
 
-                    // Solo ejecutar pruebas Locust en los servicios que tienen locustfile
                     def locustTargets = ['order-service', 'payment-service']
                     for (target in locustTargets) {
                         bat """
