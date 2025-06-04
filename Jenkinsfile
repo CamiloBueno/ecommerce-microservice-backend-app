@@ -116,7 +116,7 @@ pipeline {
                     bat "docker network inspect locust-net || docker network create locust-net"
 
                     def services = [
-                        [name: 'zipkin', image: 'openzipkin/zipkin'],
+                        [name: 'zipkin', image: 'openzipkin/zipkin', healthUrl: 'http://zipkin-test'],
                         [name: 'service-discovery', image: "${DOCKERHUB_USER}/service-discovery:latest", healthUrl: 'http://service-discovery-test/actuator/health'],
                         [name: 'cloud-config', image: "${DOCKERHUB_USER}/cloud-config:latest", healthUrl: 'http://cloud-config-test/cloud-config/actuator/health'],
                         [name: 'api-gateway', image: "${DOCKERHUB_USER}/api-gateway:latest", healthUrl: 'http://api-gateway-test/api-gateway/actuator/health'],
@@ -131,22 +131,9 @@ pipeline {
 
                     for (svc in services) {
                         bat "docker run -d --rm --network locust-net --name ${svc.name}-test ${svc.image}"
-                        echo "Waiting for ${svc.name} to be healthy..."
-
+                        echo "Esperando que ${svc.name} esté saludable..."
                         bat """
-                            powershell -Command \"
-                            \$maxAttempts = 30
-                            for (\$i = 0; \$i -lt \$maxAttempts; \$i++) {
-                                try {
-                                    \$response = Invoke-WebRequest -Uri '${svc.healthUrl}' -UseBasicParsing
-                                    if (\$response.StatusCode -eq 200) {
-                                        Write-Host '${svc.name} is healthy.'
-                                        break
-                                    }
-                                } catch {}
-                                Start-Sleep -Seconds 2
-                            }
-                            \"
+                            powershell -Command "$i=0; while (\$i -lt 30) { try { if ((Invoke-WebRequest -Uri '${svc.healthUrl}' -UseBasicParsing).StatusCode -eq 200) { Write-Host '${svc.name} is healthy'; break } } catch {}; Start-Sleep -Seconds 2; \$i++ }"
                         """
                     }
 
