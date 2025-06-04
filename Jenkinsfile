@@ -113,7 +113,7 @@ pipeline {
         stage('Run Locust Load Tests') {
             steps {
                 script {
-                    // Create network only if not exists
+                    // Crear red solo si no existe
                     bat "docker network inspect locust-net || docker network create locust-net"
 
                     def services = [
@@ -136,10 +136,11 @@ pipeline {
                         bat "ping -n 11 127.0.0.1 > nul"
                     }
 
-                    def targets = ['api-gateway', 'product-service']
-                    for (target in targets) {
+                    // Solo ejecutar pruebas Locust en los servicios que tienen locustfile
+                    def locustTargets = ['order-service', 'payment-service']
+                    for (target in locustTargets) {
                         bat """
-                            docker run --rm --network locust-net -v %cd%/locust:/mnt/locust locustio/locust ^
+                            docker run --rm --network locust-net -v %cd%/locust/test:/mnt/locust locustio/locust ^
                             -f /mnt/locust/${target}/locustfile.py --headless -u 10 -r 2 ^
                             --host=http://${target}-test --run-time 30s
                         """
