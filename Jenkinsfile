@@ -131,19 +131,21 @@ pipeline {
 
                     for (svc in services) {
                         bat "docker run -d --rm --network locust-net --name ${svc.name}-test ${svc.image}"
+                        echo "Esperando 60 segundos para que ${svc.name} arranque..."
+                        bat "timeout /T 60 > nul"
 
-                        echo "Esperando que ${svc.name} dé HTTP 200..."
-
+                        echo "Verificando endpoint ${svc.healthUrl}..."
                         bat """
-                            for /L %%i in (1,1,30) do (
-                              curl -s -o nul -w "%%{http_code}" ${svc.healthUrl} | findstr 200 > nul
-                              if !errorlevel! == 0 (
-                                echo ${svc.name} está listo.
-                                goto listo
+                            for /L %%i in (1,1,15) do (
+                              curl -s -o nul -w "%%{{http_code}}" ${svc.healthUrl} | findstr 200 > nul
+                              if !errorlevel! == 1 (
+                                timeout /T 5 > nul
+                              ) else (
+                                echo ${svc.name} está listo
+                                goto :ok
                               )
-                              timeout /T 2 > nul
                             )
-                            :listo
+                            :ok
                         """
                     }
 
