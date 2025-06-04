@@ -47,16 +47,9 @@ pipeline {
             steps {
                 script {
                     def services = [
-                        'service-discovery',
-                        'cloud-config',
-                        'api-gateway',
-                        'proxy-client',
-                        'order-service',
-                        'payment-service',
-                        'product-service',
-                        'shipping-service',
-                        'user-service',
-                        'favourite-service'
+                        'service-discovery', 'cloud-config', 'api-gateway', 'proxy-client',
+                        'order-service', 'payment-service', 'product-service',
+                        'shipping-service', 'user-service', 'favourite-service'
                     ]
                     for (service in services) {
                         bat "docker build -t ${DOCKERHUB_USER}/${service}:latest ./${service}"
@@ -71,16 +64,9 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
                         bat "echo %DOCKERHUB_PASS% | docker login -u %DOCKERHUB_USER% --password-stdin"
                         def services = [
-                            'service-discovery',
-                            'cloud-config',
-                            'api-gateway',
-                            'proxy-client',
-                            'order-service',
-                            'payment-service',
-                            'product-service',
-                            'shipping-service',
-                            'user-service',
-                            'favourite-service'
+                            'service-discovery', 'cloud-config', 'api-gateway', 'proxy-client',
+                            'order-service', 'payment-service', 'product-service',
+                            'shipping-service', 'user-service', 'favourite-service'
                         ]
                         for (service in services) {
                             bat "docker push %DOCKERHUB_USER%/${service}:latest"
@@ -94,14 +80,8 @@ pipeline {
             steps {
                 script {
                     def yamls = [
-                        'zipkin-kube',
-                        'service-discovery-kube',
-                        'cloud-config-kube',
-                        'api-gateway-kube',
-                        'order-service-kube',
-                        'payment-service-kube',
-                        'product-service-kube',
-                        'user-service-kube'
+                        'zipkin-kube', 'service-discovery-kube', 'cloud-config-kube', 'api-gateway-kube',
+                        'order-service-kube', 'payment-service-kube', 'product-service-kube', 'user-service-kube'
                     ]
                     for (service in yamls) {
                         bat "kubectl apply -f k8s/${service}/ --kubeconfig=%KUBECONFIG%"
@@ -131,22 +111,8 @@ pipeline {
 
                     for (svc in services) {
                         bat "docker run -d --rm --network locust-net --name ${svc.name}-test ${svc.image}"
-                        echo "Esperando 60 segundos para que ${svc.name} arranque..."
-                        bat "timeout /T 60 > nul"
-
-                        echo "Verificando endpoint ${svc.healthUrl}..."
-                        bat """
-                            for /L %%i in (1,1,15) do (
-                              curl -s -o nul -w "%%{{http_code}}" ${svc.healthUrl} | findstr 200 > nul
-                              if !errorlevel! == 1 (
-                                timeout /T 5 > nul
-                              ) else (
-                                echo ${svc.name} está listo
-                                goto :ok
-                              )
-                            )
-                            :ok
-                        """
+                        echo "Esperando que ${svc.name}-test responda HTTP 200 en /actuator/health..."
+                        bat "powershell -Command \"for ($i = 0; $i -lt 30; $i++) { $res = Invoke-WebRequest -Uri '${svc.healthUrl}' -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue; if ($res.StatusCode -eq 200) { Write-Host 'OK'; break } Start-Sleep -Seconds 2 }\""
                     }
 
                     def locustTargets = ['order-service', 'payment-service']
