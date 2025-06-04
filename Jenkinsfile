@@ -104,19 +104,19 @@ pipeline {
 
                     for (svc in services) {
                         bat "docker run -d --rm --network ecommerce-test -p ${svc.port}:${svc.port} --name ${svc.name} ${svc.image}"
-                        bat """
-                        powershell -Command "\`$i=0; while (\`$i -lt 30) {
-                            try {
-                                \`$resp = Invoke-WebRequest -Uri '${svc.health}' -UseBasicParsing -TimeoutSec 3;
-                                if (\`$resp.StatusCode -eq 200) {
-                                    Write-Host '${svc.name} is healthy';
-                                    break
-                                }
-                            } catch {}
-                            Start-Sleep -Seconds 2;
-                            \`$i++
-                        }"
-                        """
+                        bat '''
+                            powershell -Command "$i=0; while ($i -lt 30) {
+                                try {
+                                    $resp = Invoke-WebRequest -Uri '${svc.health}' -UseBasicParsing -TimeoutSec 3;
+                                    if ($resp.StatusCode -eq 200) {
+                                        Write-Host '${svc.name} is healthy';
+                                        break
+                                    }
+                                } catch {}
+                                Start-Sleep -Seconds 2;
+                                $i++
+                            }"
+                        '''
                     }
                 }
             }
