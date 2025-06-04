@@ -113,6 +113,7 @@ pipeline {
         stage('Run Locust Load Tests') {
             steps {
                 script {
+                    // Create network only if not exists
                     bat "docker network inspect locust-net || docker network create locust-net"
 
                     def services = [
@@ -132,7 +133,7 @@ pipeline {
                     for (svc in services) {
                         bat "docker run -d --rm --network locust-net --name ${svc.name}-test ${svc.image}"
                         echo "Esperando 10 segundos para que ${svc.name}-test esté listo..."
-                        bat "timeout /T 10 /NOBREAK"
+                        bat "ping -n 11 127.0.0.1 > nul"
                     }
 
                     def targets = ['api-gateway', 'product-service']
