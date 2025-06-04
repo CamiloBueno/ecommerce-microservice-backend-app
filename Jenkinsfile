@@ -9,6 +9,7 @@ pipeline {
     environment {
         DOCKERHUB_USER = 'camilobueno'
         KUBECONFIG = 'C:\\Users\\camil\\.kube\\config'
+        IMAGE_TAG = 'latest'
     }
 
     stages {
@@ -93,34 +94,29 @@ pipeline {
         stage('Run Locust Load Tests') {
             steps {
                 script {
-                            bat '''
-                            if not exist locust-reports mkdir locust-reports
+                    bat '''
+                    if not exist locust-reports mkdir locust-reports
 
-                            docker run --rm --network ecommerce-test ^
-                            -v %cd%\\locust-reports:/mnt/locust ^
-                            jacoboossag/locust:%IMAGE_TAG% ^
-                            -f test/order-service/locustfile.py ^
-                            --host http://order-service-container:8300 ^
-                            --headless -u 10 -r 2 -t 1m ^
-                            --only-summary ^
-                            --html /mnt/locust/order-service-report.html
+                    docker run --rm --network ecommerce-test ^
+                    -v %cd%\\locust-reports:/mnt/locust ^
+                    jacoboossag/locust:%IMAGE_TAG% ^
+                    -f test/order-service/locustfile.py ^
+                    --host http://order-service-container:8300 ^
+                    --headless -u 10 -r 2 -t 1m ^
+                    --only-summary ^
+                    --html /mnt/locust/order-service-report.html
 
-                            docker run --rm --network ecommerce-test ^
-                            -v %cd%\\locust-reports:/mnt/locust ^
-                            jacoboossag/locust:%IMAGE_TAG% ^
-                            -f test/payment-service/locustfile.py ^
-                            --host http://payment-service-container:8400 ^
-                            --headless -u 10 -r 1 -t 1m ^
-                            --only-summary ^
-                            --html /mnt/locust/payment-service-report.html
-                            '''
-                    }
+                    docker run --rm --network ecommerce-test ^
+                    -v %cd%\\locust-reports:/mnt/locust ^
+                    jacoboossag/locust:%IMAGE_TAG% ^
+                    -f test/payment-service/locustfile.py ^
+                    --host http://payment-service-container:8400 ^
+                    --headless -u 10 -r 1 -t 1m ^
+                    --only-summary ^
+                    --html /mnt/locust/payment-service-report.html
+                    '''
 
-                    for (svc in services) {
-                        bat "docker stop ${svc.name}-test || exit 0"
-                    }
-
-                    bat "docker network rm locust-net || exit 0"
+                    bat "docker network rm ecommerce-test || exit 0"
                 }
             }
         }
