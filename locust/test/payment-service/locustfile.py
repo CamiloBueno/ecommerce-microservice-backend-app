@@ -4,7 +4,7 @@ import random
 class PaymentServiceUser(HttpUser):
     wait_time = between(1, 3)
     payment_ids = [1, 2, 3]
-    order_ids = [1, 2, 3, 4]
+    order_ids = [1, 2, 3]
 
     @task
     def getAllPayments(self):
