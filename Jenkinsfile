@@ -90,23 +90,19 @@ pipeline {
         // }
 
         stage('Start containers for load and stress testing') {
-            //when { branch 'stage' }
             steps {
                 script {
                     bat '''
                     docker network create ecommerce-test
 
                     docker run -d --name zipkin-container --network ecommerce-test -p 9411:9411 openzipkin/zipkin
+                    timeout /t 90
 
                     docker run -d --name service-discovery-container --network ecommerce-test -p 8761:8761 ^
                     -e SPRING_PROFILES_ACTIVE=stage ^
                     -e SPRING_ZIPKIN_BASE_URL=http://zipkin-container:9411 ^
                     camilobueno/service-discovery:latest
-
-                    until curl -s http://localhost:8761/actuator/health | findstr /C:"\"status\":\"UP\"" > nul; do
-                        echo "Waiting for service discovery to be ready..."
-                        timeout /t 10
-                    done
+                    timeout /t 90
 
                     docker run -d --name cloud-config-container --network ecommerce-test -p 9296:9296 ^
                     -e SPRING_PROFILES_ACTIVE=stage ^
@@ -114,11 +110,7 @@ pipeline {
                     -e EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://service-discovery-container:8761/eureka/ ^
                     -e EUREKA_INSTANCE=cloud-config-container ^
                     camilobueno/cloud-config:latest
-
-                    until curl -s http://localhost:9296/actuator/health | findstr /C:"\"status\":\"UP\"" > nul; do
-                        echo "Waiting for cloud config to be ready..."
-                        timeout /t 10
-                    done
+                    timeout /t 90
 
                     docker run -d --name order-service-container --network ecommerce-test -p 8300:8300 ^
                     -e SPRING_PROFILES_ACTIVE=stage ^
@@ -127,11 +119,7 @@ pipeline {
                     -e EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://service-discovery-container:8761/eureka ^
                     -e EUREKA_INSTANCE=order-service-container ^
                     camilobueno/order-service:latest
-
-                    until curl -s http://localhost:8300/order-service/actuator/health | findstr /C:"\"status\":\"UP\"" > nul; do
-                        echo "Waiting for order service to be ready..."
-                        timeout /t 10
-                    done
+                    timeout /t 90
 
                     docker run -d --name payment-service-container --network ecommerce-test -p 8400:8400 ^
                     -e SPRING_PROFILES_ACTIVE=stage ^
@@ -140,11 +128,7 @@ pipeline {
                     -e EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://service-discovery-container:8761/eureka ^
                     -e EUREKA_INSTANCE=payment-service-container ^
                     camilobueno/payment-service:latest
-
-                    until curl -s http://localhost:8400/payment-service/actuator/health | findstr /C:"\"status\":\"UP\"" > nul; do
-                        echo "Waiting for payment service to be ready..."
-                        timeout /t 10
-                    done
+                    timeout /t 90
 
                     docker run -d --name product-service-container --network ecommerce-test -p 8500:8500 ^
                     -e SPRING_PROFILES_ACTIVE=stage ^
@@ -153,11 +137,7 @@ pipeline {
                     -e EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://service-discovery-container:8761/eureka ^
                     -e EUREKA_INSTANCE=product-service-container ^
                     camilobueno/product-service:latest
-
-                    until curl -s http://localhost:8500/product-service/actuator/health | findstr /C:"\"status\":\"UP\"" > nul; do
-                        echo "Waiting for product service to be ready..."
-                        timeout /t 10
-                    done
+                    timeout /t 90
 
                     docker run -d --name shipping-service-container --network ecommerce-test -p 8600:8600 ^
                     -e SPRING_PROFILES_ACTIVE=stage ^
@@ -166,11 +146,7 @@ pipeline {
                     -e EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://service-discovery-container:8761/eureka ^
                     -e EUREKA_INSTANCE=shipping-service-container ^
                     camilobueno/shipping-service:latest
-
-                    until curl -s http://localhost:8600/shipping-service/actuator/health | findstr /C:"\"status\":\"UP\"" > nul; do
-                        echo "Waiting for shipping service to be ready..."
-                        timeout /t 10
-                    done
+                    timeout /t 90
 
                     docker run -d --name user-service-container --network ecommerce-test -p 8700:8700 ^
                     -e SPRING_PROFILES_ACTIVE=stage ^
@@ -179,11 +155,7 @@ pipeline {
                     -e EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://service-discovery-container:8761/eureka ^
                     -e EUREKA_INSTANCE=user-service-container ^
                     camilobueno/user-service:latest
-
-                    until curl -s http://localhost:8700/user-service/actuator/health | findstr /C:"\"status\":\"UP\"" > nul; do
-                        echo "Waiting for user service to be ready..."
-                        timeout /t 10
-                    done
+                    timeout /t 90
 
                     docker run -d --name favourite-service-container --network ecommerce-test -p 8800:8800 ^
                     -e SPRING_PROFILES_ACTIVE=stage ^
@@ -192,16 +164,11 @@ pipeline {
                     -e EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://service-discovery-container:8761/eureka ^
                     -e EUREKA_INSTANCE=favourite-service-container ^
                     camilobueno/favourite-service:latest
-
-                    until curl -s http://localhost:8800/favourite-service/actuator/health | findstr /C:"\"status\":\"UP\"" > nul; do
-                        echo "Waiting for favourite service to be ready..."
-                        timeout /t 10
-                    done
+                    timeout /t 90
                     '''
                 }
             }
         }
-
 
         stage('Run Load Tests with Locust') {
             steps {
