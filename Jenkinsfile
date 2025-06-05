@@ -90,7 +90,7 @@ pipeline {
         // }
 
         stage('Start containers for load and stress testing') {
-            when { branch 'stage' }
+            //when { branch 'stage' }
             steps {
                 script {
                     bat '''
