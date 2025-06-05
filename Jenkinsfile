@@ -170,9 +170,13 @@ pipeline {
 
                     for (test in locustTests) {
                         bat """
-                            docker run --rm --network ecommerce-test -v %cd%/locust/test:/mnt/locust locustio/locust ^
-                            -f /mnt/locust/${test.name}/locustfile.py ^
-                            --host=http://${test.container}:${test.port} --headless -u 10 -r 2 -t 30s
+                            docker run --rm --network ecommerce-test ^
+                                                -v "%CD%\\locust:/mnt" ^
+                                                camilobueno/locust:latest ^
+                                                -f /mnt/test/${test.name}/locustfile.py ^
+                                                --host http://${test.container}:{test.port}/ ^
+                                                --headless -u 10 -r 2 -t 1m ^
+                                                --only-summary ^
                         """
                     }
                 }
@@ -189,7 +193,7 @@ pipeline {
 
                     for (test in stressTests) {
                         bat """
-                            docker run --rm --network ecommerce-test -v %cd%/locust/test:/mnt/locust locustio/locust ^
+                            docker run --rm --network ecommerce-test -v %cd%/locust/test:/mnt/locust locust/locust ^
                             -f /mnt/locust/${test.name}/locustfile.py ^
                             --host=http://${test.container}:${test.port} --headless -u 50 -r 5 -t 1m
                         """
