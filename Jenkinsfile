@@ -89,7 +89,7 @@ pipeline {
         //     }
         // }
 
-        stage('Levantar contenedores para pruebas') {
+        /*stage('Levantar contenedores para pruebas') {
                     //when {
                       //  anyOf {
                       //      branch 'stage'
@@ -158,7 +158,7 @@ pipeline {
                             '''
                         }
                     }
-                }
+                }*/
 
         stage('Run Load Tests with Locust') {
             steps {
@@ -174,7 +174,7 @@ pipeline {
                                                 -v "%CD%\\locust:/mnt" ^
                                                 camilobueno/locust:latest ^
                                                 -f /mnt/test/${test.name}/locustfile.py ^
-                                                --host http://${test.container}:{test.port}/ ^
+                                                --host http://${test.container}:${test.port}/ ^
                                                 --headless -u 10 -r 2 -t 1m ^
                                                 --only-summary ^
                         """
