@@ -90,10 +90,10 @@ pipeline {
         // }
 
         stage('Levantar contenedores para pruebas') {
-                    when {
-                        anyOf {
-                            branch 'stage'
-                        }
+                    //when {
+                      //  anyOf {
+                      //      branch 'stage'
+                      //  }
                     }
                     steps {
                         script {
