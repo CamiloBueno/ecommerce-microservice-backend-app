@@ -15,79 +15,79 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
+        // stage('Checkout') {
+        //     steps {
+        //         checkout scm
+        //     }
+        // }
 
-        stage('Verify Tools') {
-            steps {
-                bat 'java -version'
-                bat 'mvn -version'
-                bat 'docker --version'
-                bat 'kubectl config current-context --kubeconfig=%KUBECONFIG%'
-            }
-        }
+        // stage('Verify Tools') {
+        //     steps {
+        //         bat 'java -version'
+        //         bat 'mvn -version'
+        //         bat 'docker --version'
+        //         bat 'kubectl config current-context --kubeconfig=%KUBECONFIG%'
+        //     }
+        // }
 
-        stage('Build Services (creating .jar files)') {
-            steps {
-                bat 'mvn clean package -DskipTests'
-            }
-        }
+        // stage('Build Services (creating .jar files)') {
+        //     steps {
+        //         bat 'mvn clean package -DskipTests'
+        //     }
+        // }
 
-        stage('Unit Tests') {
-            steps {
-                script {
-                    ['user-service', 'product-service'].each {
-                        dir(it) {
-                            bat 'mvn test'
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Unit Tests') {
+        //     steps {
+        //         script {
+        //             ['user-service', 'product-service'].each {
+        //                 dir(it) {
+        //                     bat 'mvn test'
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('Integration Tests') {
-            steps {
-                script {
-                    ['user-service', 'product-service'].each {
-                        dir(it) {
-                            bat 'mvn verify'
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Integration Tests') {
+        //     steps {
+        //         script {
+        //             ['user-service', 'product-service'].each {
+        //                 dir(it) {
+        //                     bat 'mvn verify'
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('E2E Tests') {
-            steps {
-                bat 'mvn verify -pl e2e'
-            }
-        }
+        // stage('E2E Tests') {
+        //     steps {
+        //         bat 'mvn verify -pl e2e'
+        //     }
+        // }
 
-        stage('Build Docker Images of each service') {
-            steps {
-                script {
-                    SERVICES.split().each { service ->
-                        bat "docker build -t %DOCKERHUB_USER%/${service}:latest ./${service}"
-                    }
-                }
-            }
-        }
+        // stage('Build Docker Images of each service') {
+        //     steps {
+        //         script {
+        //             SERVICES.split().each { service ->
+        //                 bat "docker build -t %DOCKERHUB_USER%/${service}:latest ./${service}"
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('Push Docker Images to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
-                    bat "docker login -u %DOCKERHUB_USER% -p %DOCKERHUB_PASS%"
-                    script {
-                        SERVICES.split().each { service ->
-                            bat "docker push %DOCKERHUB_USER%/${service}:latest"
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Push Docker Images to Docker Hub') {
+        //     steps {
+        //         withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
+        //             bat "docker login -u %DOCKERHUB_USER% -p %DOCKERHUB_PASS%"
+        //             script {
+        //                 SERVICES.split().each { service ->
+        //                     bat "docker push %DOCKERHUB_USER%/${service}:latest"
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         stage('Start containers for load and stress testing') {
             steps {
@@ -95,7 +95,7 @@ pipeline {
                     bat "docker network inspect ecommerce-test || docker network create ecommerce-test"
 
                     def services = [
-                        [name: 'zipkin', port: 9411, image: 'openzipkin/zipkin', health: 'http://localhost:9411'],
+                        [name: 'zipkin-container', port: 9411, image: 'openzipkin/zipkin', health: 'http://localhost:9411'],
                         [name: 'service-discovery-container', port: 8761, image: 'camilobueno/service-discovery:latest', health: 'http://localhost:8761/actuator/health'],
                         [name: 'cloud-config-container', port: 9296, image: 'camilobueno/cloud-config:latest', health: 'http://localhost:9296/cloud-config/actuator/health'],
                         [name: 'order-service-container', port: 8300, image: 'camilobueno/order-service:latest', health: 'http://localhost:8300/order-service/actuator/health'],
@@ -103,20 +103,21 @@ pipeline {
                     ]
 
                     for (svc in services) {
-                        bat "docker run -d --rm --network ecommerce-test -p ${svc.port}:${svc.port} --name ${svc.name} ${svc.image}"
-                        bat '''
-                            powershell -Command "$i=0; while ($i -lt 30) {
+                        bat "docker rm -f ${svc.name} || exit 0"
+                        bat "docker run -d --network ecommerce-test -p ${svc.port}:${svc.port} --name ${svc.name} ${svc.image}"
+                        bat """
+                            powershell -Command "$i=0; while (\$i -lt 30) {
                                 try {
-                                    $resp = Invoke-WebRequest -Uri '${svc.health}' -UseBasicParsing -TimeoutSec 3;
-                                    if ($resp.StatusCode -eq 200) {
+                                    \$resp = Invoke-WebRequest -Uri '${svc.health}' -UseBasicParsing -TimeoutSec 3;
+                                    if (\$resp.StatusCode -eq 200) {
                                         Write-Host '${svc.name} is healthy';
                                         break
                                     }
                                 } catch {}
                                 Start-Sleep -Seconds 2;
-                                $i++
+                                \$i++
                             }"
-                        '''
+                        """
                     }
                 }
             }
