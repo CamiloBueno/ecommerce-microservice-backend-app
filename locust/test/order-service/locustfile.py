@@ -14,15 +14,15 @@ class OrderServiceUser(HttpUser):
             else:
                 response.failure(f"Unexpected status code: {response.status_code} | Body: {response.text}")
 
-     @task
-     def getOrderById(self):
-         order_id = random.choice(self.order_ids)
-         path = f"/order-service/api/orders/{order_id}"
-         with self.client.get(path, catch_response=True, name="/api/orders/{id}") as response:
-             if response.status_code >= 200 and response.status_code < 300:
-                 response.success()
-             else:
-                 response.failure(f"Unexpected status code: {response.status_code} | Body: {response.text}")
+    @task
+    def getOrderById(self):
+        order_id = random.choice(self.order_ids)
+        path = f"/order-service/api/orders/{order_id}"
+        with self.client.get(path, catch_response=True, name="/api/orders/{id}") as response:
+            if response.status_code >= 200 and response.status_code < 300:
+                response.success()
+            else:
+                response.failure(f"Unexpected status code: {response.status_code} | Body: {response.text}")
 
     @task
     def deleteOrderById(self):
