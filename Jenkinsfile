@@ -94,7 +94,7 @@ pipeline {
                       //  anyOf {
                       //      branch 'stage'
                       //  }
-                    }
+                    //}
                     steps {
                         script {
                             bat '''
