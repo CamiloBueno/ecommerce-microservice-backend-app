@@ -16,11 +16,11 @@ class PaymentServiceUser(HttpUser):
                 response.failure(f"Unexpected status code: {response.status_code}")
 
     @task
-        def getPaymentById(self):
-            payment_id = random.choice(self.payment_ids)
-            path = f"/payment-service/api/payments/{payment_id}"
-            with self.client.get(path, catch_response=True, name="/api/payments/{id}") as response:
-                if response.status_code >= 200 and response.status_code < 300:
+    def getPaymentById(self):
+        payment_id = random.choice(self.payment_ids)
+        path = f"/payment-service/api/payments/{payment_id}"
+        with self.client.get(path, catch_response=True, name="/api/payments/{id}") as response:
+            if response.status_code >= 200 and response.status_code < 300:
                     response.success()
-                else:
-                    response.failure(f"Unexpected status code: {response.status_code}")
+            else:
+                response.failure(f"Unexpected status code: {response.status_code}")
