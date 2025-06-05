@@ -10,7 +10,8 @@ class OrderServiceUser(HttpUser):
         path = "/order-service/api/orders"
         with self.client.get(path, catch_response=True, name="/api/orders") as response:
             if response.status_code >= 200 and response.status_code < 300:
-                response.success(f"respuesta {response.status_code} | Body: {response.text}")
+                response.success()
+                print(f"Response: {response.text}")
             else:
                 response.failure(f"Unexpected status code: {response.status_code} | Body: {response.text}")
 
