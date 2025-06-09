@@ -24,6 +24,7 @@ class OrderServiceUser(HttpUser):
             else:
                 response.failure(f"Unexpected status code: {response.status_code} | Body: {response.text}")
 
+    '''
     @task
     def deleteOrderById(self):
         order_id = random.choice(self.order_ids)
@@ -33,3 +34,4 @@ class OrderServiceUser(HttpUser):
                 response.success()
             else:
                 response.failure(f"Failed to delete order {order_id}: {response.status_code} | {response.text}")
+    '''
