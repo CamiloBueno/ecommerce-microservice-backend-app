@@ -197,8 +197,11 @@ pipeline {
                             docker run --rm --network ecommerce-test ^
                             -v "%CD%\\locust:/mnt" ^
                             camilobueno/locust:latest ^
-                            -f /mnt/locust/${test.name}/locustfile.py ^
-                            --host=http://${test.container}:${test.port} --headless -u 50 -r 5 -t 1m
+                            -f /mnt/test/${test.name}/locustfile.py ^
+                            --host=http://${test.container}:${test.port} ^
+                            --headless -u 50 -r 5 -t 1m ^
+                            --only-summary ^
+
                         """
                     }
                 }
