@@ -90,7 +90,7 @@ pipeline {
             }
         }
 
-        /*stage('Levantar contenedores para pruebas') {
+        stage('Levantar contenedores para pruebas') {
                     //when {
                       //  anyOf {
                       //      branch 'stage'
@@ -159,7 +159,7 @@ pipeline {
                             '''
                         }
                     }
-                }*/
+                }
 
         stage('Run Load Tests with Locust') {
             steps {
