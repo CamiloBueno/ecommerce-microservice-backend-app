@@ -4,7 +4,7 @@ import random
 class PaymentServiceUser(HttpUser):
     wait_time = between(1, 3)
     payment_ids = [1, 2, 3]
-'''
+
     @task
     def getAllPayments(self):
         path = "/payment-service/api/payments"
@@ -14,7 +14,7 @@ class PaymentServiceUser(HttpUser):
                 print(f"Response: {response.text}")
             else:
                 response.failure(f"Unexpected status code: {response.status_code}")
-'''
+
     @task
     def getPaymentById(self):
         payment_id = random.choice(self.payment_ids)

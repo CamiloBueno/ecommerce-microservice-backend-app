@@ -66,28 +66,29 @@ pipeline {
         //     }
         // }
 
-        // stage('Build Docker Images of each service') {
-        //     steps {
-        //         script {
-        //             SERVICES.split().each { service ->
-        //                 bat "docker build -t %DOCKERHUB_USER%/${service}:latest ./${service}"
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Build Docker Images of each service') {
+             steps {
+                 script {
+                     SERVICES.split().each { service ->
+                         bat "docker build -t %DOCKERHUB_USER%/${service}:latest ./${service}"
+                     }
+                 }
+             }
+        }
 
-        // stage('Push Docker Images to Docker Hub') {
-        //     steps {
-        //         withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
-        //             bat "docker login -u %DOCKERHUB_USER% -p %DOCKERHUB_PASS%"
-        //             script {
-        //                 SERVICES.split().each { service ->
-        //                     bat "docker push %DOCKERHUB_USER%/${service}:latest"
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Push Docker Images to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')])
+                {
+                    bat "docker login -u %DOCKERHUB_USER% -p %DOCKERHUB_PASS%"
+                    script {
+                        SERVICES.split().each { service ->
+                        bat "docker push %DOCKERHUB_USER%/${service}:latest"
+                        }
+                    }
+                }
+            }
+        }
 
         /*stage('Levantar contenedores para pruebas') {
                     //when {
