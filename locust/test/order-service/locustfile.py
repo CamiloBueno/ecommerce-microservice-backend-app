@@ -3,7 +3,7 @@ import random
 
 class OrderServiceUser(HttpUser):
     wait_time = between(1, 3)
-    order_ids = [1, 2, 3]
+    order_ids = [3,4]
 
     @task
     def getAllOrders(self):
@@ -11,7 +11,6 @@ class OrderServiceUser(HttpUser):
         with self.client.get(path, catch_response=True, name="/api/orders") as response:
             if response.status_code >= 200 and response.status_code < 300:
                 response.success()
-                print(f"Response: {response.text}")
             else:
                 response.failure(f"Unexpected status code: {response.status_code} | Body: {response.text}")
 
@@ -24,7 +23,7 @@ class OrderServiceUser(HttpUser):
                 response.success()
             else:
                 response.failure(f"Unexpected status code: {response.status_code} | Body: {response.text}")
-
+'''
     @task
     def deleteOrderById(self):
         order_id = random.choice(self.order_ids)
@@ -34,3 +33,4 @@ class OrderServiceUser(HttpUser):
                 response.success()
             else:
                 response.failure(f"Failed to delete order {order_id}: {response.status_code} | {response.text}")
+'''
