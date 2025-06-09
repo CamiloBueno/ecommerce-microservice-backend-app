@@ -11,7 +11,6 @@ class PaymentServiceUser(HttpUser):
         with self.client.get(path, catch_response=True, name="/api/payments") as response:
             if response.status_code >= 200 and response.status_code < 300:
                 response.success()
-                print(f"Response: {response.text}")
             else:
                 response.failure(f"Unexpected status code: {response.status_code}")
 
