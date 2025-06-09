@@ -195,12 +195,12 @@ pipeline {
                     for (test in stressTests) {
                         bat """
                             docker run --rm --network ecommerce-test ^
-                            -v "%CD%\\locust:/mnt" ^
-                            camilobueno/locust:latest ^
-                            -f /mnt/test/${test.name}/locustfile.py ^
-                            --host http://${test.container}:${test.port} ^
-                            --headless -u 50 -r 5 -t 1m ^
-                            --only-summary ^
+                                                -v "%CD%\\locust:/mnt" ^
+                                                camilobueno/locust:latest ^
+                                                -f /mnt/test/${test.name}/locustfile.py ^
+                                                --host http://${test.container}:${test.port} ^
+                                                --headless -u 50 -r 5 -t 1m ^
+                                                --only-summary ^
 
                         """
                     }
