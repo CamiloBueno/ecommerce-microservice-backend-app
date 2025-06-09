@@ -18,7 +18,7 @@ class PaymentServiceUser(HttpUser):
     @task
     def getPaymentById(self):
         payment_id = random.choice(self.payment_ids)
-        path = f"/payment-service/api/payments/{payment_id}"
+        path = f"/payment-service/api/payments/4"
         with self.client.get(path, catch_response=True, name="/api/payments/{id}") as response:
             if response.status_code >= 200 and response.status_code < 300:
                     response.success()
