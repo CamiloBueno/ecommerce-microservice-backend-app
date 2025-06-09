@@ -203,7 +203,6 @@ pipeline {
                                                 --host http://${test.container}:${test.port} ^
                                                 --headless -u 50 -r 5 -t 1m ^
                                                 --only-summary ^
-
                         """
                     }
                 }
