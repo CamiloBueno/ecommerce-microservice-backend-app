@@ -17,7 +17,7 @@ class OrderServiceUser(HttpUser):
     @task
     def getOrderById(self):
         #order_id = random.choice(self.order_ids)
-        path = f"/order-service/api/orders/3"
+        path = f"/order-service/api/orders/4"
         with self.client.get(path, catch_response=True, name="/api/orders/{id}") as response:
             if response.status_code >= 200 and response.status_code < 300:
                 response.success()
