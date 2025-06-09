@@ -66,6 +66,7 @@ pipeline {
         //     }
         // }
 
+/*
         stage('Build Docker Images of each service') {
              steps {
                  script {
@@ -183,6 +184,7 @@ pipeline {
                 }
             }
         }
+        */
 
         stage('Run Stress Tests with Locust') {
             steps {
