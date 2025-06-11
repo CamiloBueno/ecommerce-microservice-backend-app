@@ -117,6 +117,7 @@ pipeline {
 stage('Trivy Vulnerability Scan & Report') {
     steps {
         script {
+            def trivyPath = "C:\\Users\\camil\\Downloads\\trivy_0.63.0_windows-64bit\\trivy.exe"
             def services = [
                 'api-gateway',
                 'cloud-config',
@@ -130,18 +131,27 @@ stage('Trivy Vulnerability Scan & Report') {
                 'user-service'
             ]
 
-            services.each { service ->
-                def reportPath = "${service}"
+            // Crear carpeta trivy-reports
+            bat '''
+            if exist trivy-reports rmdir /s /q trivy-reports
+            mkdir trivy-reports
+            '''
 
+            // Ejecutar trivy por cada imagen
+            services.each { service ->
+                def reportPath = "trivy-reports\\${service}.html"
+                echo "🔍 Scanning image ${DOCKERHUB_USER}/${service}:latest with Trivy..."
 
                 bat """
-                trivy image
-
-                    ${reportPath} ^
+                ${trivyPath} image --format template ^
+                    --template "C:\\\\ProgramData\\\\trivy\\\\templates\\\\html.tpl" ^
+                    --severity HIGH,CRITICAL ^
+                    -o ${reportPath} ^
                     ${DOCKERHUB_USER}/${service}:latest
                 """
             }
 
+            // Publicar los reportes en HTML
             publishHTML(target: [
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
@@ -153,6 +163,7 @@ stage('Trivy Vulnerability Scan & Report') {
         }
     }
 }
+
 
 
 
