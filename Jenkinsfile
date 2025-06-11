@@ -130,17 +130,14 @@ stage('Trivy Vulnerability Scan & Report') {
                 'user-service'
             ]
 
-            bat 'mkdir trivy-reports'
-
             services.each { service ->
-                def reportPath = "trivy-reports\\${service}.html"
-                echo "🔍 Scanning image ${DOCKERHUB_USER}/${service}:${IMAGE_TAG} with Trivy..."
+                def reportPath = "${service}"
+
 
                 bat """
-                trivy image --format template ^
-                    --template "C:\\\\ProgramData\\\\trivy\\\\templates\\\\html.tpl" ^
-                    --severity HIGH,CRITICAL ^
-                    -o ${reportPath} ^
+                trivy image
+
+                    ${reportPath} ^
                     ${DOCKERHUB_USER}/${service}:latest
                 """
             }
