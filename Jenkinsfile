@@ -66,24 +66,8 @@ pipeline {
         //     }
         // }
 
- stage('Run Sonarqube') {
-     tools {
-         jdk 'jdk-17'
-     }
-     environment {
-         JAVA_HOME = tool 'jdk-17'
-         PATH = "${JAVA_HOME}\\bin;${env.PATH}"
-         scannerHome = tool 'SonarQubeInstall'
-     }
-     steps {
-         withSonarQubeEnv(credentialsId: 'SonarQubeC', installationName: 'SonarQubeServerInstall') {
-             bat 'java -version'
-             bat "\"${scannerHome}\\bin\\sonar-scanner.bat\" -Dsonar.java.binaries=target"
-         }
-     }
- }
 
-stage('Run SonarQube Analysis (Windows)') {
+stage('Run SonarQube Analysis   ') {
     tools {
         jdk 'jdk-17'
     }
