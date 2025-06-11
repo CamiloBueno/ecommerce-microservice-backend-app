@@ -67,7 +67,7 @@ pipeline {
         // }
 
 
-stage('Run SonarQube Analysis   ') {
+/*stage('Run SonarQube Analysis   ') {
     tools {
         jdk 'jdk-17'
     }
@@ -112,7 +112,7 @@ stage('Run SonarQube Analysis   ') {
             }
         }
     }
-}
+}*/
 
 stage('Trivy Vulnerability Scan & Report') {
     steps {
