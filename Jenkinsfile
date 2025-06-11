@@ -136,8 +136,13 @@ stage('Trivy Vulnerability Scan & Report') {
                 def reportPath = "trivy-reports\\${service}.html"
                 echo "🔍 Scanning image ${DOCKERHUB_USER}/${service}:${IMAGE_TAG} with Trivy..."
 
-                // Línea única con ^ y comillas escapadas
-                bat "trivy image --format template ^ --template \"C:\\\\ProgramData\\\\trivy\\\\templates\\\\html.tpl\" ^ --severity HIGH,CRITICAL ^ -o ${reportPath} ^ ${DOCKERHUB_USER}/${service}:${IMAGE_TAG}"
+                bat """
+                trivy image --format template ^
+                    --template "C:\\\\ProgramData\\\\trivy\\\\templates\\\\html.tpl" ^
+                    --severity HIGH,CRITICAL ^
+                    -o ${reportPath} ^
+                    ${DOCKERHUB_USER}/${service}:latest
+                """
             }
 
             publishHTML(target: [
