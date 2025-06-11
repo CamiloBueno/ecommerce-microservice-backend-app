@@ -66,7 +66,7 @@ pipeline {
         //     }
         // }
 
- stage('Run Sonarqube (Windows)') {
+ stage('Run Sonarqube') {
      tools {
          jdk 'jdk-17'
      }
@@ -248,7 +248,7 @@ stage('Run SonarQube Analysis (Windows)') {
                 }
             }
         }
-        */
+
 
         stage('Run Stress Tests with Locust') {
             steps {
