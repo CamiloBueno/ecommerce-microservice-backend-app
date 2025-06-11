@@ -215,7 +215,7 @@ pipeline {
             echo '✅ Pipeline completed successfully (until Locust tests)'
         }
         failure {
-            emailext body: '$DEFAULT_CONTENT', subject: 'DEFAULT_SUBJECT', to: 'camilobueno05@gmail.com'
+            emailext body: '$DEFAULT_CONTENT', subject: '$DEFAULT_SUBJECT', to: 'camilobueno05@gmail.com'
         }
     }
 }
