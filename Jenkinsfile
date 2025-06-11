@@ -66,7 +66,71 @@ pipeline {
         //     }
         // }
 
-/*
+ stage('Run Sonarqube (Windows)') {
+     tools {
+         jdk 'jdk-17'
+     }
+     environment {
+         JAVA_HOME = tool 'jdk-17'
+         PATH = "${JAVA_HOME}\\bin;${env.PATH}"
+         scannerHome = tool 'SonarQubeInstall'
+     }
+     steps {
+         withSonarQubeEnv(credentialsId: 'SonarQubeC', installationName: 'SonarQubeServerInstall') {
+             bat 'java -version'
+             bat "\"${scannerHome}\\bin\\sonar-scanner.bat\" -Dsonar.java.binaries=target"
+         }
+     }
+ }
+
+stage('Run SonarQube Analysis (Windows)') {
+    tools {
+        jdk 'jdk-17'
+    }
+    environment {
+        JAVA_HOME = tool 'jdk-17'
+        PATH = "${JAVA_HOME}\\bin;${env.PATH}"
+        scannerHome = tool 'SonarQubeInstall'
+    }
+    steps {
+        script {
+            def javaServices = [
+                'api-gateway',
+                'cloud-config',
+                'favourite-service',
+                'order-service',
+                'payment-service',
+                'product-service',
+                'proxy-client',
+                'service-discovery',
+                'shipping-service',
+                'user-service',
+                'e2e'
+            ]
+
+            withSonarQubeEnv(credentialsId: 'SonarQubeC', installationName: 'SonarQubeServerInstall') {
+                javaServices.each { service ->
+                    dir(service) {
+                        bat "\"${scannerHome}\\bin\\sonar-scanner.bat\" " +
+                            "-Dsonar.projectKey=${service} " +
+                            "-Dsonar.projectName=${service} " +
+                            "-Dsonar.sources=src " +
+                            "-Dsonar.java.binaries=target\\classes"
+                    }
+                }
+
+                dir('locust') {
+                    bat "\"${scannerHome}\\bin\\sonar-scanner.bat\" " +
+                        "-Dsonar.projectKey=locust " +
+                        "-Dsonar.projectName=locust " +
+                        "-Dsonar.sources=test"
+                }
+            }
+        }
+    }
+}
+
+
         stage('Build Docker Images of each service') {
              steps {
                  script {
