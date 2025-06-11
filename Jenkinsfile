@@ -114,6 +114,50 @@ stage('Run SonarQube Analysis   ') {
     }
 }
 
+stage('Trivy Vulnerability Scan & Report') {
+    steps {
+        script {
+            def services = [
+                'api-gateway',
+                'cloud-config',
+                'favourite-service',
+                'order-service',
+                'payment-service',
+                'product-service',
+                'proxy-client',
+                'service-discovery',
+                'shipping-service',
+                'user-service'
+            ]
+
+            bat 'mkdir trivy-reports'
+
+            services.each { service ->
+                def reportPath = "trivy-reports\\${service}.html"
+                echo "🔍 Scanning image ${DOCKERHUB_USER}/${service}:${IMAGE_TAG} with Trivy..."
+
+                bat """
+                trivy image --format template ^
+                    --template "C:\\\\ProgramData\\\\trivy\\\\templates\\\\html.tpl" ^
+                    --severity HIGH,CRITICAL ^
+                    -o ${reportPath} ^
+                    ${DOCKERHUB_USER}/${service}:${IMAGE_TAG}
+                """
+            }
+
+            publishHTML(target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'trivy-reports',
+                reportFiles: '*.html',
+                reportName: 'Trivy Scan Report'
+            ])
+        }
+    }
+}
+
+
 
         stage('Build Docker Images of each service') {
              steps {
