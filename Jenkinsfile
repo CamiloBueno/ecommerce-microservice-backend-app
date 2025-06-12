@@ -336,21 +336,25 @@ stage('Trivy Vulnerability Scan & Report') {
     stage('Deploy Monitoring Stack') {
         steps {
             script {
-                echo "🚀 Desplegando Prometheus y Grafana en Windows con kubectl..."
+                echo "🚀 Desplegando Prometheus y Grafana con dashboards automáticos..."
 
-                // Aplica los archivos YAML del monitoring
+                // Crear o actualizar los ConfigMaps necesarios
+                bat 'kubectl create configmap grafana-datasources --from-file=monitoring/grafana-datasource.yaml --dry-run=client -o yaml | kubectl apply -f -'
+                bat 'kubectl create configmap grafana-dashboard-config --from-file=monitoring/grafana-dashboard.yaml --dry-run=client -o yaml | kubectl apply -f -'
+                bat 'kubectl create configmap grafana-dashboard-json --from-file=monitoring/dashboards/node-exporter-full.json --dry-run=client -o yaml | kubectl apply -f -'
+
+                // Aplicar Prometheus y Grafana
                 bat 'kubectl apply -f monitoring\\prometheus-config.yaml'
                 bat 'kubectl apply -f monitoring\\prometheus-deployment.yaml'
                 bat 'kubectl apply -f monitoring\\prometheus-service.yaml'
-                bat 'kubectl apply -f monitoring\\grafana-datasource.yaml'
                 bat 'kubectl apply -f monitoring\\grafana-deployment.yaml'
                 bat 'kubectl apply -f monitoring\\grafana-service.yaml'
 
-                echo "✅ Despliegue completado."
+                echo "✅ Monitoring desplegado."
 
-                // Muestra las URLs de acceso (puertos NodePort expuestos por Minikube)
+                // Mostrar las URLs locales para acceder a los servicios
                 echo "🌐 Accede a Prometheus en: http://localhost:32478"
-                echo "📊 Accede a Grafana en: http://localhost:31950"
+                echo "📊 Accede a Grafana en: http://localhost:31950 (usa 'minikube service grafana --url' si no carga)"
             }
         }
     }
