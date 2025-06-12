@@ -112,7 +112,7 @@ pipeline {
             }
         }
     }
-}*/
+}
 
 stage('Trivy Vulnerability Scan & Report') {
     steps {
@@ -307,7 +307,7 @@ stage('Trivy Vulnerability Scan & Report') {
                     }
                 }
             }
-        }
+        }*/
 
         stage('Waiting approval for deployment') {
                     when { branch 'master' }
