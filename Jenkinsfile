@@ -318,4 +318,13 @@ stage('Trivy Vulnerability Scan & Report') {
             emailext body: '$DEFAULT_CONTENT', subject: '$DEFAULT_SUBJECT', to: 'camilobueno05@gmail.com'
         }
     }
+
+    stage('Waiting approval for deployment') {
+                when { branch 'master' }
+                steps {
+                    script {
+                        input message: 'Approve deployment to production (kubernetes) ?', ok: 'Deploy'
+                    }
+                }
+            }
 }
