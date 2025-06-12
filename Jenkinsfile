@@ -147,7 +147,7 @@ stage('Trivy Vulnerability Scan & Report') {
 
                 bat """
                 trivy image --format template ^
-                    --template "C:\\\\Users\\\\camil\\\\Downloads\\\\trivy_0.63.0_windows-64bit\\\\contrib\\\\html.tpl" ^
+                    --template="C:/Users/camil/Downloads/trivy_0.63.0_windows-64bit/contrib/html.tpl" ^
                     --severity HIGH,CRITICAL ^
                     -o ${reportPath} ^
                     ${DOCKERHUB_USER}/${service}:latest
