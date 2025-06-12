@@ -116,11 +116,11 @@ pipeline {
 
 stage('Trivy Vulnerability Scan & Report') {
     environment{
-        trivyPath = "C:\\Users\\camil\\Downloads\\trivy_0.63.0_windows-64bit\\trivy.exe"
+        TRIVY_DIR = "C:\\Users\\camil\\Downloads\\trivy_0.63.0_windows-64bit"
     }
     steps {
         script {
-            env.PATH = "${trivyPath};${env.PATH}"
+            env.PATH = "${TRIVY_DIR};${env.PATH}"
             def services = [
                 'api-gateway',
                 'cloud-config',
