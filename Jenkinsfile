@@ -113,7 +113,7 @@ pipeline {
         }
     }
 }*/
-
+/*
 stage('Trivy Vulnerability Scan & Report') {
     environment{
         TRIVY_DIR = "C:\\Users\\camil\\Downloads\\trivy_0.63.0_windows-64bit"
@@ -332,6 +332,16 @@ stage('Trivy Vulnerability Scan & Report') {
             emailext body: '$DEFAULT_CONTENT', subject: '$DEFAULT_SUBJECT', to: 'camilobueno05@gmail.com'
         }
     }
-
+*/
+    stage('Deploy Monitoring Stack') {
+        steps {
+            script {
+                echo "Desplegando Prometheus y Grafana en Windows"
+                bat 'kubectl apply -f monitoring\\prometheus-config.yaml'
+                bat 'kubectl apply -f monitoring\\prometheus-deployment.yaml'
+                bat 'kubectl apply -f monitoring\\grafana-deployment.yaml'
+            }
+        }
+    }
 
 }
