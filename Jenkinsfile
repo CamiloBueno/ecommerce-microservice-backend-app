@@ -115,9 +115,12 @@ pipeline {
 }*/
 
 stage('Trivy Vulnerability Scan & Report') {
+    environment{
+        trivyPath = "C:\\Users\\camil\\Downloads\\trivy_0.63.0_windows-64bit\\trivy.exe"
+    }
     steps {
         script {
-            def trivyPath = "C:\\Users\\camil\\Downloads\\trivy_0.63.0_windows-64bit\\trivy.exe"
+            env.PATH = "${trivyPath};${env.PATH}"
             def services = [
                 'api-gateway',
                 'cloud-config',
@@ -143,7 +146,7 @@ stage('Trivy Vulnerability Scan & Report') {
                 echo "🔍 Scanning image ${DOCKERHUB_USER}/${service}:latest with Trivy..."
 
                 bat """
-                ${trivyPath} image --format template ^
+                trivy image --format template ^
                     --template "C:\\\\Users\\\\camil\\\\Downloads\\\\trivy_0.63.0_windows-64bit\\\\contrib\\\\html.tpl" ^
                     --severity HIGH,CRITICAL ^
                     -o ${reportPath} ^
