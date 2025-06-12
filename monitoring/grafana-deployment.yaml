@@ -17,15 +17,11 @@ spec:
           image: grafana/grafana
           ports:
             - containerPort: 3000
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: grafana
-spec:
-  selector:
-    app: grafana
-  ports:
-    - port: 3000
-      targetPort: 3000
-  type: NodePort
+          volumeMounts:
+            - name: grafana-datasources
+              mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+      volumes:
+        - name: grafana-datasources
+          configMap:
+            name: grafana-datasources

@@ -342,6 +342,7 @@ stage('Trivy Vulnerability Scan & Report') {
                 bat 'kubectl apply -f monitoring\\prometheus-config.yaml'
                 bat 'kubectl apply -f monitoring\\prometheus-deployment.yaml'
                 bat 'kubectl apply -f monitoring\\prometheus-service.yaml'
+                bat 'kubectl apply -f monitoring\\grafana-datasource.yaml'
                 bat 'kubectl apply -f monitoring\\grafana-deployment.yaml'
                 bat 'kubectl apply -f monitoring\\grafana-service.yaml'
 
