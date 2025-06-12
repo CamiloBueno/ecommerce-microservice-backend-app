@@ -336,13 +336,24 @@ stage('Trivy Vulnerability Scan & Report') {
     stage('Deploy Monitoring Stack') {
         steps {
             script {
-                echo "Desplegando Prometheus y Grafana en Windows"
+                echo "🚀 Desplegando Prometheus y Grafana en Windows con kubectl..."
+
+                // Aplica los archivos YAML del monitoring
                 bat 'kubectl apply -f monitoring\\prometheus-config.yaml'
                 bat 'kubectl apply -f monitoring\\prometheus-deployment.yaml'
+                bat 'kubectl apply -f monitoring\\prometheus-service.yaml'
                 bat 'kubectl apply -f monitoring\\grafana-deployment.yaml'
+                bat 'kubectl apply -f monitoring\\grafana-service.yaml'
+
+                echo "✅ Despliegue completado."
+
+                // Muestra las URLs de acceso (puertos NodePort expuestos por Minikube)
+                echo "🌐 Accede a Prometheus en: http://localhost:32478"
+                echo "📊 Accede a Grafana en: http://localhost:31950"
             }
         }
     }
+
   }
 
 }
