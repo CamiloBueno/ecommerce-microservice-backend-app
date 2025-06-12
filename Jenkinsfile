@@ -112,7 +112,7 @@ pipeline {
             }
         }
     }
-}
+}*/
 
 stage('Trivy Vulnerability Scan & Report') {
     steps {
@@ -144,7 +144,8 @@ stage('Trivy Vulnerability Scan & Report') {
 
                 bat """
                 ${trivyPath} image --format template ^
-                    --template "C:\\\\ProgramData\\\\trivy\\\\templates\\\\html.tpl" ^
+                    --template "C:\\\\Users\\\\camil\\\\Downloads\\\\trivy_0.63.0_windows-64bit\\\\contrib\\\\html.tpl" ^
+
                     --severity HIGH,CRITICAL ^
                     -o ${reportPath} ^
                     ${DOCKERHUB_USER}/${service}:latest
@@ -307,7 +308,7 @@ stage('Trivy Vulnerability Scan & Report') {
                     }
                 }
             }
-        }*/
+        }
 
         stage('Waiting approval for deployment') {
                     when { branch 'master' }
