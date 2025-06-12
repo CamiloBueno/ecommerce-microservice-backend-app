@@ -5,10 +5,11 @@ metadata:
   labels:
     app: grafana
 spec:
-  type: NodePort
+  type: LoadBalancer
+  loadBalancerIP: 127.0.0.1
   ports:
     - port: 3000
       targetPort: 3000
-      nodePort: 31950
+      protocol: TCP
   selector:
     app: grafana

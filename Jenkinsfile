@@ -359,6 +359,14 @@ stage('Trivy Vulnerability Scan & Report') {
         }
     }
 
+    stage('📊 Mostrar URLs de Monitorización') {
+        steps {
+            echo 'Accede a Prometheus en: http://127.0.0.1:9090'
+            echo 'Accede a Grafana en:    http://127.0.0.1:3000'
+        }
+    }
+
+
   }
 
 }

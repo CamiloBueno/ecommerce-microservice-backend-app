@@ -1,14 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: prometheus-service
+  name: grafana
   labels:
-    app: prometheus
+    app: grafana
 spec:
-  type: NodePort
+  type: LoadBalancer
+  loadBalancerIP: 127.0.0.1
   ports:
-    - port: 9090
-      targetPort: 9090
-      nodePort: 32478
+    - port: 9000
+      targetPort: 3000
+      protocol: TCP
   selector:
-    app: prometheus
+    app: grafana
