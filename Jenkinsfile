@@ -308,6 +308,17 @@ stage('Trivy Vulnerability Scan & Report') {
                 }
             }
         }
+
+        stage('Waiting approval for deployment') {
+                    when { branch 'master' }
+                    steps {
+                        script {
+
+
+                            input message: 'Approve deployment to production (kubernetes) ?', ok: 'Deploy'
+                        }
+                    }
+                }
     }
 
     post {
