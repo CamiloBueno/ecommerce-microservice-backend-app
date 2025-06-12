@@ -343,5 +343,6 @@ stage('Trivy Vulnerability Scan & Report') {
             }
         }
     }
+  }
 
 }
