@@ -326,7 +326,7 @@ stage('Trivy Vulnerability Scan & Report') {
 
 
 */
-/*
+
         stage('OWASP ZAP Scan') {
             when { branch 'master' }
             steps {
@@ -376,7 +376,7 @@ stage('Trivy Vulnerability Scan & Report') {
                 }
             }
         }
-
+/*
     stage('Deploy Monitoring Stack') {
         steps {
             script {
@@ -410,14 +410,14 @@ stage('Trivy Vulnerability Scan & Report') {
         }
     }
     */
-    post {
-            success {
-                echo '✅ Pipeline completed successfully (until Locust tests)'
-            }
-            failure {
-                emailext body: '$DEFAULT_CONTENT', subject: '$DEFAULT_SUBJECT', to: 'camilobueno05@gmail.com'
-            }
-        }
+   /* post {
+                success {
+                    echo '✅ Pipeline completed successfully (until Locust tests)'
+                }
+                failure {
+                    emailext body: '$DEFAULT_CONTENT', subject: '$DEFAULT_SUBJECT', to: 'camilobueno05@gmail.com'
+                }
+            }*/
 
   }
 
