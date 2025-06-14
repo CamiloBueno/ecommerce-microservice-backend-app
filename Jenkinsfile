@@ -193,7 +193,7 @@ stage('Trivy Vulnerability Scan & Report') {
                 }
             }
         }
-
+*/
         stage('Levantar contenedores para pruebas') {
                     //when {
                       //  anyOf {
@@ -264,7 +264,7 @@ stage('Trivy Vulnerability Scan & Report') {
                         }
                     }
                 }
-
+/*
         stage('Run Load Tests with Locust') {
             steps {
                 script {
@@ -324,15 +324,59 @@ stage('Trivy Vulnerability Scan & Report') {
                 }
     }
 
-    post {
-        success {
-            echo '✅ Pipeline completed successfully (until Locust tests)'
-        }
-        failure {
-            emailext body: '$DEFAULT_CONTENT', subject: '$DEFAULT_SUBJECT', to: 'camilobueno05@gmail.com'
-        }
-    }
+
 */
+/*
+        stage('OWASP ZAP Scan') {
+            when { branch 'master' }
+            steps {
+                script {
+                    echo '🔐 Iniciando escaneos con OWASP ZAP en Windows...'
+
+                    def targets = [
+                        [name: 'order-service', url: 'http://order-service-container:8300/order-service'],
+                        [name: 'payment-service', url: 'http://payment-service-container:8400/payment-service'],
+                        [name: 'product-service', url: 'http://product-service-container:8500/product-service'],
+                        [name: 'shipping-service', url: 'http://shipping-service-container:8600/shipping-service'],
+                        [name: 'user-service', url: 'http://user-service-container:8700/user-service'],
+                        [name: 'favourite-service', url: 'http://favourite-service-container:8800/favourite-service']
+                    ]
+
+                    // Crear carpeta si no existe
+                    bat '''
+                    if not exist zap-reports (
+                        mkdir zap-reports
+                    )
+                    '''
+
+                    targets.each { service ->
+                        def reportFile = "zap-reports\\report-${service.name}.html"
+                        echo "🚨 Escaneando ${service.name} (${service.url}) con ZAP..."
+
+                        bat """
+                        docker run --rm ^
+                            --network ecommerce-test ^
+                            -v "%CD%\\zap-reports:/zap/wrk" ^
+                            owasp/zap2docker-stable zap-full-scan.py ^
+                            -t ${service.url} ^
+                            -r report-${service.name}.html ^
+                            -I
+                        """
+                    }
+
+                    // Publicar los reportes HTML en Jenkins
+                    publishHTML(target: [
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'zap-reports',
+                        reportFiles: '*.html',
+                        reportName: 'ZAP Full Scan Reports'
+                    ])
+                }
+            }
+        }
+
     stage('Deploy Monitoring Stack') {
         steps {
             script {
@@ -365,7 +409,15 @@ stage('Trivy Vulnerability Scan & Report') {
             echo 'Accede a Grafana en:    http://127.0.0.1:3000'
         }
     }
-
+    */
+    post {
+            success {
+                echo '✅ Pipeline completed successfully (until Locust tests)'
+            }
+            failure {
+                emailext body: '$DEFAULT_CONTENT', subject: '$DEFAULT_SUBJECT', to: 'camilobueno05@gmail.com'
+            }
+        }
 
   }
 
