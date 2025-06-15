@@ -18,6 +18,7 @@ import com.selimhorri.app.dto.PaymentDto;
 import com.selimhorri.app.dto.response.collection.DtoCollectionResponse;
 import com.selimhorri.app.service.PaymentService;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,12 +30,14 @@ public class PaymentResource {
 	
 	private final PaymentService paymentService;
 	
+	@CircuitBreaker(name = "paymentService", fallbackMethod = "fallbackGetOrders") 
 	@GetMapping
 	public ResponseEntity<DtoCollectionResponse<PaymentDto>> findAll() {
 		log.info("*** PaymentDto List, controller; fetch all payments *");
 		return ResponseEntity.ok(new DtoCollectionResponse<>(this.paymentService.findAll()));
 	}
 	
+	@CircuitBreaker(name = "paymentService", fallbackMethod = "fallbackGetUsers")
 	@GetMapping("/{paymentId}")
 	public ResponseEntity<PaymentDto> findById(
 			@PathVariable("paymentId") 
@@ -69,7 +72,9 @@ public class PaymentResource {
 		return ResponseEntity.ok(true);
 	}
 	
-	
+	public String fallbackGetOrders(Exception ex) { 
+   		return "Fallback: Unable to retrieve Orders."; 
+	}
 	
 }
 
