@@ -1,4 +1,4 @@
-package com.selimhorri.app.config.feature;
+package com.selimhorri.app.config;
 
 import java.io.File;
 
@@ -13,6 +13,8 @@ import org.togglz.core.repository.file.FileBasedStateRepository;
 import org.togglz.core.spi.FeatureProvider;
 import org.togglz.core.user.UserProvider;
 import org.togglz.servlet.user.ServletUserProvider;
+
+import com.selimhorri.app.config.feature.OrderFeatures;
 
 @ApplicationScope
 public class DemoTogglzConfig implements TogglzConfig {
