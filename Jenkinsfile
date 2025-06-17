@@ -13,6 +13,19 @@ pipeline {
         SERVICES = 'api-gateway cloud-config order-service payment-service product-service proxy-client service-discovery shipping-service user-service'
     }
 
+            stage('Build Services (creating .jar files)') {
+                when {
+                    anyOf {
+                        branch 'dev'
+                        branch 'stage'
+                        branch 'master'
+                    }
+                }
+                steps {
+                    bat 'mvn clean package -DskipTests'
+                }
+            }
+
     stage('Unit Tests & Coverage') {
         when { branch 'dev' }
         steps {
@@ -41,18 +54,7 @@ pipeline {
             ])
         }
     }
-        stage('Build Services (creating .jar files)') {
-            when {
-                anyOf {
-                    branch 'dev'
-                    branch 'stage'
-                    branch 'master'
-                }
-            }
-            steps {
-                bat 'mvn clean package -DskipTests'
-            }
-        }
+
 
         stage('Build Docker Images of each service') {
             steps {
