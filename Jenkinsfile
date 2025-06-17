@@ -357,7 +357,7 @@ stage('Trivy Vulnerability Scan & Report') {
                         docker run --rm ^
                             --network ecommerce-test ^
                             -v "%CD%\\zap-reports:/zap/wrk" ^
-                            owasp/zap2docker-stable zap-full-scan.py ^
+                            zaproxy/zap-stable zap-full-scan.py ^
                             -t ${service.url} ^
                             -r report-${service.name}.html ^
                             -I
