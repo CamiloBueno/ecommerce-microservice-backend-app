@@ -14,7 +14,7 @@ pipeline {
     }
 
     stages {
-
+/*
     stage('Scanning Branch') {
         steps {
             bat """
@@ -74,7 +74,7 @@ pipeline {
         }
     }
 
-
+*/
 
 
         // stage('Checkout') {
@@ -127,6 +127,36 @@ pipeline {
         //         bat 'mvn verify -pl e2e'
         //     }
         // }
+
+stage('Save Artifacts Locally') {
+    when { branch 'master' }
+    steps {
+        bat """
+        @echo off
+        setlocal EnableDelayedExpansion
+
+        echo Creating local artifacts directory...
+        if not exist artifacts-local (
+            mkdir artifacts-local
+        )
+
+        set SERVICES=api-gateway cloud-config favourite-service order-service payment-service product-service proxy-client service-discovery shipping-service user-service
+
+        for %%S in (!SERVICES!) do (
+            echo Copying %%S jar...
+            if exist %%S\\target\\%%S-v0.1.0.jar (
+                copy %%S\\target\\%%S-v0.1.0.jar artifacts-local\\%%S-v0.1.0.jar >nul
+            ) else (
+                echo [WARNING] %%S\\target\\%%S-v0.1.0.jar not found!
+            )
+        )
+
+        echo All artifacts copied to artifacts-local folder.
+
+        exit /b 0
+        """
+    }
+}
 
 
 /*stage('Run SonarQube Analysis   ') {
