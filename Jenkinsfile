@@ -28,34 +28,35 @@ pipeline {
     //     }
     // }
 
-    stage('Unit Tests & Coverage') {
-        when { branch 'master' }
-        steps {
-            bat """
-            @echo off
-            set SERVICES=user-service product-service
+    // stage('Unit Tests & Coverage') {
+    //     when { branch 'master' }
+    //     steps {
+    //         bat """
+    //         @echo off
+    //         set SERVICES=user-service product-service
 
-            for %%S in (%SERVICES%) do (
-                echo Running tests and generating coverage for %%S...
-                call mvn clean test jacoco:report -pl %%S
-            )
-            """
+    //         for %%S in (%SERVICES%) do (
+    //             echo Running tests and generating coverage for %%S...
+    //             call mvn clean test jacoco:report -pl %%S
+    //         )
+    //         """
 
-            junit '**/target/surefire-reports/*.xml'
+    //         junit '**/target/surefire-reports/*.xml'
 
-            publishHTML(target: [
-                reportDir: 'user-service/target/site/jacoco',
-                reportFiles: 'index.html',
-                reportName: 'Cobertura user-service'
-            ])
+    //         publishHTML(target: [
+    //             reportDir: 'user-service/target/site/jacoco',
+    //             reportFiles: 'index.html',
+    //             reportName: 'Cobertura user-service'
+    //         ])
 
-            publishHTML(target: [
-                reportDir: 'product-service/target/site/jacoco',
-                reportFiles: 'index.html',
-                reportName: 'Cobertura product-service'
-            ])
-        }
-    }
+    //         publishHTML(target: [
+    //             reportDir: 'product-service/target/site/jacoco',
+    //             reportFiles: 'index.html',
+    //             reportName: 'Cobertura product-service'
+    //         ])
+    //     }
+    // }
+
 
 
 
@@ -82,7 +83,7 @@ pipeline {
                 }
             }
         }
-*/ /*
+*/
         stage('Levantar contenedores para pruebas') {
             steps {
                 script {
@@ -146,7 +147,7 @@ pipeline {
                     '''
                 }
             }
-        }*/
+        }
 /*
         stage('Run Load Tests with Locust') {
             steps {
@@ -241,6 +242,33 @@ pipeline {
                 }
             }
         }*/
+
+        stage('Stop and Remove Containers') {
+            when { branch 'stage' }
+            steps {
+                script {
+                    bat '''
+                    @echo off
+
+                    docker rm -f locust || exit /b 0
+                    docker rm -f favourite-service-container || exit /b 0
+                    docker rm -f user-service-container || exit /b 0
+                    docker rm -f shipping-service-container || exit /b 0
+                    docker rm -f product-service-container || exit /b 0
+                    docker rm -f payment-service-container || exit /b 0
+                    docker rm -f order-service-container || exit /b 0
+                    docker rm -f cloud-config-container || exit /b 0
+                    docker rm -f service-discovery-container || exit /b 0
+                    docker rm -f zipkin-container || exit /b 0
+                    docker rm -f zap-container || exit /b 0
+
+                    docker network rm ecommerce-test || exit /b 0
+                    '''
+                }
+            }
+        }
+
+
 
         stage('📊 Mostrar URLs de Monitorización') {
             steps {
