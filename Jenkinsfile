@@ -13,34 +13,44 @@ pipeline {
         SERVICES = 'api-gateway cloud-config order-service payment-service product-service proxy-client service-discovery shipping-service user-service'
     }
 
-    stages {
+    stage('Unit Tests & Coverage') {
+        when { branch 'dev' }
+        steps {
+            bat """
+            @echo off
+            set SERVICES=user-service product-service
 
-        stage('Unit Tests & Coverage') {
-            // when { branch 'dev' } // ⛔ Comentado para que funcione en cualquier rama, incluyendo 'master'
+            for %%S in (%SERVICES%) do (
+                echo Running tests and generating coverage for %%S...
+                call mvn clean test jacoco:report -pl %%S
+            )
+            """
+
+            junit '**/target/surefire-reports/*.xml'
+
+            publishHTML(target: [
+                reportDir: 'user-service/target/site/jacoco',
+                reportFiles: 'index.html',
+                reportName: 'Cobertura user-service'
+            ])
+
+            publishHTML(target: [
+                reportDir: 'product-service/target/site/jacoco',
+                reportFiles: 'index.html',
+                reportName: 'Cobertura product-service'
+            ])
+        }
+    }
+        stage('Build Services (creating .jar files)') {
+            when {
+                anyOf {
+                    branch 'dev'
+                    branch 'stage'
+                    branch 'master'
+                }
+            }
             steps {
-                bat """
-                @echo off
-                set SERVICES=user-service product-service
-
-                for %%S in (%SERVICES%) do (
-                    echo Running tests and generating coverage for %%S...
-                    call mvn clean test jacoco:report -pl %%S
-                )
-                """
-
-                junit '**/target/surefire-reports/*.xml'
-
-                publishHTML(target: [
-                    reportDir: 'user-service/target/site/jacoco',
-                    reportFiles: 'index.html',
-                    reportName: 'Cobertura user-service'
-                ])
-
-                publishHTML(target: [
-                    reportDir: 'product-service/target/site/jacoco',
-                    reportFiles: 'index.html',
-                    reportName: 'Cobertura product-service'
-                ])
+                bat 'mvn clean package -DskipTests'
             }
         }
 
