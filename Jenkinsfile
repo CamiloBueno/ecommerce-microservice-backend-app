@@ -28,34 +28,35 @@ pipeline {
     //     }
     // }
 
-    stage('Unit Tests & Coverage') {
-        when { branch 'stage' }
-        steps {
-            bat """
-            @echo off
-            set SERVICES=user-service product-service
+    // stage('Unit Tests & Coverage') {
+    //     when { branch 'stage' }
+    //     steps {
+    //         bat """
+    //         @echo off
+    //         set SERVICES=user-service product-service
+    //
+    //         for %%S in (%SERVICES%) do (
+    //             echo Running tests and generating coverage for %%S...
+    //             call mvn clean test jacoco:report -pl %%S
+    //         )
+    //         """
+    //
+    //         junit '**/target/surefire-reports/*.xml'
+    //
+    //         publishHTML(target: [
+    //             reportDir: 'user-service/target/site/jacoco',
+    //             reportFiles: 'index.html',
+    //             reportName: 'Cobertura user-service'
+    //         ])
+    //
+    //         publishHTML(target: [
+    //             reportDir: 'product-service/target/site/jacoco',
+    //             reportFiles: 'index.html',
+    //             reportName: 'Cobertura product-service'
+    //         ])
+    //     }
+    // }
 
-            for %%S in (%SERVICES%) do (
-                echo Running tests and generating coverage for %%S...
-                call mvn clean test jacoco:report -pl %%S
-            )
-            """
-
-            junit '**/target/surefire-reports/*.xml'
-
-            publishHTML(target: [
-                reportDir: 'user-service/target/site/jacoco',
-                reportFiles: 'index.html',
-                reportName: 'Cobertura user-service'
-            ])
-
-            publishHTML(target: [
-                reportDir: 'product-service/target/site/jacoco',
-                reportFiles: 'index.html',
-                reportName: 'Cobertura product-service'
-            ])
-        }
-    }
 
 
 
@@ -149,8 +150,11 @@ pipeline {
                 }
             }
         }
-/*
+
         stage('Run Load Tests with Locust') {
+            when {
+                branch 'stage'
+            }
             steps {
                 script {
                     def locustTests = [
@@ -174,6 +178,9 @@ pipeline {
         }
 
         stage('Run Stress Tests with Locust') {
+        when {
+                        branch 'stage'
+                    }
             steps {
                 script {
                     def stressTests = [
@@ -195,7 +202,7 @@ pipeline {
                 }
             }
         }
-*//*
+/*
         stage('OWASP ZAP Scan') {
             steps {
                 script {
