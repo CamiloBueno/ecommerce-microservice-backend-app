@@ -28,34 +28,35 @@ pipeline {
     //     }
     // }
 
-    // stage('Unit Tests & Coverage') {
-    //     when { branch 'dev' }
-    //     steps {
-    //         bat """
-    //         @echo off
-    //         set SERVICES=user-service product-service
+    stage('Unit Tests & Coverage') {
+        when { branch 'dev' }
+        steps {
+            bat """
+            @echo off
+            set SERVICES=user-service product-service
 
-    //         for %%S in (%SERVICES%) do (
-    //             echo Running tests and generating coverage for %%S...
-    //             call mvn clean test jacoco:report -pl %%S
-    //         )
-    //         """
+            for %%S in (%SERVICES%) do (
+                echo Running tests and generating coverage for %%S...
+                call mvn clean test jacoco:report -pl %%S
+            )
+            """
 
-    //         junit '**/target/surefire-reports/*.xml'
+            junit '**/target/surefire-reports/*.xml'
 
-    //         publishHTML(target: [
-    //             reportDir: 'user-service/target/site/jacoco',
-    //             reportFiles: 'index.html',
-    //             reportName: 'Cobertura user-service'
-    //         ])
+            publishHTML(target: [
+                reportDir: 'user-service/target/site/jacoco',
+                reportFiles: 'index.html',
+                reportName: 'Cobertura user-service'
+            ])
 
-    //         publishHTML(target: [
-    //             reportDir: 'product-service/target/site/jacoco',
-    //             reportFiles: 'index.html',
-    //             reportName: 'Cobertura product-service'
-    //         ])
-    //     }
-    // }
+            publishHTML(target: [
+                reportDir: 'product-service/target/site/jacoco',
+                reportFiles: 'index.html',
+                reportName: 'Cobertura product-service'
+            ])
+        }
+    }
+
 
 
 /*
@@ -81,7 +82,7 @@ pipeline {
                 }
             }
         }
-*/
+*/ /*
         stage('Levantar contenedores para pruebas') {
             steps {
                 script {
@@ -145,7 +146,7 @@ pipeline {
                     '''
                 }
             }
-        }
+        }*/
 /*
         stage('Run Load Tests with Locust') {
             steps {
@@ -192,7 +193,7 @@ pipeline {
                 }
             }
         }
-*/
+*//*
         stage('OWASP ZAP Scan') {
             steps {
                 script {
@@ -239,7 +240,7 @@ pipeline {
                     ])
                 }
             }
-        }
+        }*/
 
         stage('📊 Mostrar URLs de Monitorización') {
             steps {
