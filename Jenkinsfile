@@ -208,11 +208,13 @@ pipeline {
 
         stage('OWASP ZAP Scan') {
             when {
-                            branch 'stage'
-                        }
+                branch 'stage'
+            }
             steps {
                 script {
                     echo '🔐 Iniciando escaneos con OWASP ZAP en Windows...'
+
+                    def outputDir = 'C:\\zap-output'  // ruta global accesible por ZAP y Jenkins
 
                     def targets = [
                         [name: 'order-service', url: 'http://order-service-container:8300/order-service'],
@@ -223,39 +225,39 @@ pipeline {
                         [name: 'favourite-service', url: 'http://favourite-service-container:8800/favourite-service']
                     ]
 
-                    bat '''
-                    if not exist zap-reports (
-                        mkdir zap-reports
-                    )
-                    '''
+                    // Crear carpeta solo si no existe
+                    bat """
+                    if not exist "${outputDir}" mkdir "${outputDir}"
+                    """
 
                     targets.each { service ->
-                        def reportFile = "zap-reports\\report-${service.name}.html"
+                        def reportFile = "${outputDir}\\report-${service.name}.html"
                         echo "🚨 Escaneando ${service.name} (${service.url}) con ZAP..."
 
                         bat """
-                            docker run --rm ^
-                                --network ecommerce-test ^
-                                -v "%WORKSPACE%/zap-reports:/zap/wrk/zap-reports" ^
-                                zaproxy/zap-stable zap-baseline.py ^
-                                -t ${service.url} ^
-                                -r report-${service.name}.html ^
-                                -I
-
+                        docker run --rm ^
+                            --network ecommerce-test ^
+                            -v ${outputDir}:/zap/wrk ^
+                            zaproxy/zap-stable zap-baseline.py ^
+                            -t ${service.url} ^
+                            -r report-${service.name}.html ^
+                            -I
                         """
                     }
 
+                    // Publicar todos los reportes desde C:\zap-output
                     publishHTML(target: [
                         allowMissing: true,
                         alwaysLinkToLastBuild: true,
                         keepAll: true,
-                        reportDir: 'zap-reports',
+                        reportDir: outputDir,
                         reportFiles: '*.html',
                         reportName: 'ZAP Full Scan Reports'
                     ])
                 }
             }
         }
+
 
         stage('Stop and Remove Containers') {
             when { branch 'stage' }
