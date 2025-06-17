@@ -288,18 +288,18 @@ pipeline {
             when { branch 'master' }
             steps {
                 bat """
-                    kubectl apply -f k8s/zipkin/ -n %K8S_NAMESPACE%
-                    kubectl rollout status deployment/zipkin -n %K8S_NAMESPACE% --timeout=200s
+                    kubectl apply -f k8s/zipkin/
+                    kubectl rollout status deployment/zipkin
 
-                    kubectl apply -f k8s/service-discovery/ -n %K8S_NAMESPACE%
-                    kubectl set image deployment/service-discovery service-discovery=%DOCKERHUB_USER%/service-discovery:%IMAGE_TAG% -n %K8S_NAMESPACE%
-                    kubectl set env deployment/service-discovery SPRING_PROFILES_ACTIVE=%SPRING_PROFILES_ACTIVE% -n %K8S_NAMESPACE%
-                    kubectl rollout status deployment/service-discovery -n %K8S_NAMESPACE% --timeout=200s
+                    kubectl apply -f k8s/service-discovery/
+                    kubectl set image deployment/service-discovery service-discovery=${DOCKERHUB_USER}/service-discovery:${IMAGE_TAG}
+                    kubectl set env deployment/service-discovery SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+                    kubectl rollout status deployment/service-discovery
 
-                    kubectl apply -f k8s/cloud-config/ -n %K8S_NAMESPACE%
-                    kubectl set image deployment/cloud-config cloud-config=%DOCKERHUB_USER%/cloud-config:%IMAGE_TAG% -n %K8S_NAMESPACE%
-                    kubectl set env deployment/cloud-config SPRING_PROFILES_ACTIVE=%SPRING_PROFILES_ACTIVE% -n %K8S_NAMESPACE%
-                    kubectl rollout status deployment/cloud-config -n %K8S_NAMESPACE% --timeout=300s
+                    kubectl apply -f k8s/cloud-config/ -n ${K8S_NAMESPACE}
+                    kubectl set image deployment/cloud-config cloud-config=${DOCKERHUB_USER}/cloud-config:${IMAGE_TAG}
+                    kubectl set env deployment/cloud-config SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+                    kubectl rollout status deployment/cloud-config
                 """
             }
         }
@@ -314,10 +314,10 @@ pipeline {
                         def image = "%DOCKERHUB_USER%/${svc}:%IMAGE_TAG%"
 
                         bat """
-                            kubectl apply -f k8s/${svc}/ -n %K8S_NAMESPACE%
-                            kubectl set image deployment/${svc} ${svc}=${image} -n %K8S_NAMESPACE%
-                            kubectl set env deployment/${svc} SPRING_PROFILES_ACTIVE=%SPRING_PROFILES_ACTIVE% -n %K8S_NAMESPACE%
-                            kubectl rollout status deployment/${svc} -n %K8S_NAMESPACE% --timeout=200s
+                            kubectl apply -f k8s/${svc}/
+                            kubectl set image deployment/${svc} ${svc}=${image}
+                            kubectl set env deployment/${svc} SPRING_PROFILES_ACTIVE=%SPRING_PROFILES_ACTIVE%
+                            kubectl rollout status deployment/${svc}
                         """
                     }
                 }
