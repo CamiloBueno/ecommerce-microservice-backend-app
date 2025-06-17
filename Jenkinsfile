@@ -296,7 +296,7 @@ pipeline {
                     kubectl set env deployment/service-discovery SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
                     kubectl rollout status deployment/service-discovery
 
-                    kubectl apply -f k8s/cloud-config/ -n ${K8S_NAMESPACE}
+                    kubectl apply -f k8s/cloud-config/
                     kubectl set image deployment/cloud-config cloud-config=${DOCKERHUB_USER}/cloud-config:${IMAGE_TAG}
                     kubectl set env deployment/cloud-config SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
                     kubectl rollout status deployment/cloud-config
