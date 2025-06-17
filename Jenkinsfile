@@ -296,13 +296,13 @@ pipeline {
             when { branch 'master' }
             steps {
                 bat """
-                    kubectl apply -f k8s/zipkin/
+                    kubectl apply -f k8s/zipkin-kube/
                     kubectl rollout status deployment/zipkin
 
-                    kubectl apply -f k8s/service-discovery/
+                    kubectl apply -f k8s/service-discovery-kube/
                     kubectl rollout status deployment/service-discovery
 
-                    kubectl apply -f k8s/cloud-config/
+                    kubectl apply -f k8s/cloud-config-kube/
                     kubectl rollout status deployment/cloud-config
                 """
             }
