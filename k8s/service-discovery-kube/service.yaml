@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: service-discovery
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: service-discovery
   ports:

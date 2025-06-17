@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: zipkin
 spec:
-  type: NodePort
+  type: LoadBalancer  # Changed to LoadBalancer
   selector:
     app: zipkin
   ports:
     - port: 9411
       targetPort: 9411
-      nodePort: 30911
+      nodePort: 30911  # Optional - only needed if you want a specific NodePort

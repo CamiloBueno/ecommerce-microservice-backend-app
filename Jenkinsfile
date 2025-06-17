@@ -313,13 +313,14 @@ pipeline {
             steps {
                 script {
                     def appServices = ['api-gateway', 'cloud-config', 'favourite-service', 'order-service', 'payment-service', 'product-service', 'proxy-client', 'service-discovery', 'shipping-service', 'user-service']
+                    def deploymentPath = ['api-gateway-kube', 'order-service-kube', 'payment-service-kube', 'product-service-kube', 'user-service-kube']
 
                     for (svc in appServices) {
-                        def image = "%DOCKERHUB_USER%/${svc}:latest"
+                        def image = "%DOCKERHUB_USER%/${deploymentPath}:latest"
 
                         bat """
-                            kubectl apply -f k8s/${svc}/
-                            kubectl rollout status deployment/${svc}
+                            kubectl apply -f k8s/${deploymentPath}/
+                            kubectl rollout status deployment/${deploymentPath}
                         """
                     }
                 }
