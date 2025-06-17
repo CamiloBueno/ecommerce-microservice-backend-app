@@ -29,7 +29,7 @@ pipeline {
     // }
 
     stage('Unit Tests & Coverage') {
-        when { branch 'dev' }
+        when { branch 'master' }
         steps {
             bat """
             @echo off
