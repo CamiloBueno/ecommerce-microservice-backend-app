@@ -221,7 +221,7 @@ pipeline {
                             docker run --rm ^
                                 --network ecommerce-test ^
                                 -v "%WORKSPACE%/zap-reports:/zap/wrk/zap-reports" ^
-                                zaproxy/zap-stable zap-full-scan.py ^
+                                zaproxy/zap-stable zap-baseline.py ^
                                 -t ${service.url} ^
                                 -r report-${service.name}.html ^
                                 -I
