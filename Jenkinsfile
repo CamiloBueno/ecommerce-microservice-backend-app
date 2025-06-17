@@ -13,9 +13,9 @@ pipeline {
         SERVICES = 'api-gateway cloud-config order-service payment-service product-service proxy-client service-discovery shipping-service user-service'
     }
 
-            stage('Build Services (creating .jar files)') {
-                when {
-                    anyOf {
+    stage('compiling services') {
+        when{
+        anyOf {
                         branch 'dev'
                         branch 'stage'
                         branch 'master'
