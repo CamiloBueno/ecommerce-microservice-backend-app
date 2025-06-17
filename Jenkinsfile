@@ -284,6 +284,14 @@ pipeline {
             }
         }
 */
+
+        stage('Waiting approval for deployment') {
+            when { branch 'master' }
+            steps {
+                input message: 'Approve deployment to production (kubernetes)?', ok: 'Deploy'
+            }
+        }
+
         stage('Deploy Core Services') {
             when { branch 'master' }
             steps {
@@ -292,13 +300,9 @@ pipeline {
                     kubectl rollout status deployment/zipkin
 
                     kubectl apply -f k8s/service-discovery/
-                    kubectl set image deployment/service-discovery service-discovery=${DOCKERHUB_USER}/service-discovery:${IMAGE_TAG}
-                    kubectl set env deployment/service-discovery SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
                     kubectl rollout status deployment/service-discovery
 
                     kubectl apply -f k8s/cloud-config/
-                    kubectl set image deployment/cloud-config cloud-config=${DOCKERHUB_USER}/cloud-config:${IMAGE_TAG}
-                    kubectl set env deployment/cloud-config SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
                     kubectl rollout status deployment/cloud-config
                 """
             }
@@ -311,12 +315,10 @@ pipeline {
                     def appServices = ['api-gateway', 'cloud-config', 'favourite-service', 'order-service', 'payment-service', 'product-service', 'proxy-client', 'service-discovery', 'shipping-service', 'user-service']
 
                     for (svc in appServices) {
-                        def image = "%DOCKERHUB_USER%/${svc}:%IMAGE_TAG%"
+                        def image = "%DOCKERHUB_USER%/${svc}:latest"
 
                         bat """
                             kubectl apply -f k8s/${svc}/
-                            kubectl set image deployment/${svc} ${svc}=${image}
-                            kubectl set env deployment/${svc} SPRING_PROFILES_ACTIVE=%SPRING_PROFILES_ACTIVE%
                             kubectl rollout status deployment/${svc}
                         """
                     }
@@ -328,13 +330,6 @@ pipeline {
             steps {
                 echo 'Accede a Prometheus en: http://127.0.0.1:9090'
                 echo 'Accede a Grafana en:    http://127.0.0.1:3000'
-            }
-        }
-
-        stage('Waiting approval for deployment') {
-            when { branch 'master' }
-            steps {
-                input message: 'Approve deployment to production (kubernetes)?', ok: 'Deploy'
             }
         }
     }
