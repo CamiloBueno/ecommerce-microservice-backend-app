@@ -308,24 +308,26 @@ pipeline {
             }
         }
 
-        stage('Deploy Microservices') {
-            when { branch 'master' }
-            steps {
-                script {
-                    def appServices = ['api-gateway', 'cloud-config', 'favourite-service', 'order-service', 'payment-service', 'product-service', 'proxy-client', 'service-discovery', 'shipping-service', 'user-service']
-                    def deploymentPath = ['api-gateway-kube', 'order-service-kube', 'payment-service-kube', 'product-service-kube', 'user-service-kube']
+stage('Deploy Microservices') {
+    when { branch 'master' }
+    steps {
+        script {
+            def appServices = ['api-gateway', 'order-service', 'payment-service', 'product-service', 'user-service']
 
-                    for (svc in appServices) {
-                        def image = "%DOCKERHUB_USER%/${deploymentPath}:latest"
+            for (svc in appServices) {
+                def image = "%DOCKERHUB_USER%/${svc}:latest"
+                def deploymentPath = "${svc}-kube"
 
-                        bat """
-                            kubectl apply -f k8s/${deploymentPath}/
-                            kubectl rollout status deployment/${deploymentPath}
-                        """
-                    }
-                }
+                bat """
+                    echo Using image: ${image}
+                    kubectl apply -f k8s/${deploymentPath}/
+                    kubectl rollout status deployment/${svc}
+                """
             }
         }
+    }
+}
+
 
         stage('📊 Mostrar URLs de Monitorización') {
             steps {
