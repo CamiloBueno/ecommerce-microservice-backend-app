@@ -15,6 +15,64 @@ pipeline {
 
     stages {
 
+    stage('Scanning Branch') {
+        steps {
+            bat """
+            @echo off
+            setlocal EnableDelayedExpansion
+
+            echo Detected branch: %BRANCH_NAME%
+
+            REM Simular diccionario profileConfig
+            set SPRING_PROFILES_ACTIVE=dev
+            set IMAGE_TAG=dev
+            set DEPLOYMENT_SUFFIX=-dev
+
+            if "%BRANCH_NAME%"=="master" (
+                set SPRING_PROFILES_ACTIVE=prod
+                set IMAGE_TAG=prod
+                set DEPLOYMENT_SUFFIX=-prod
+            ) else if "%BRANCH_NAME%"=="stage" (
+                set SPRING_PROFILES_ACTIVE=stage
+                set IMAGE_TAG=stage
+                set DEPLOYMENT_SUFFIX=-stage
+            )
+
+            REM Flags
+            if "%BRANCH_NAME%"=="master" (
+                set IS_MASTER=true
+            ) else (
+                set IS_MASTER=false
+            )
+
+            if "%BRANCH_NAME%"=="stage" (
+                set IS_STAGE=true
+            ) else (
+                set IS_STAGE=false
+            )
+
+            if "%BRANCH_NAME%"=="dev" (
+                set IS_DEV=true
+            ) else (
+                set IS_DEV=false
+            )
+
+            REM startsWith simulation for 'feature/'
+            set "IS_FEATURE=false"
+            echo %BRANCH_NAME% | findstr /B "feature/" >nul
+            if !errorlevel! == 0 (
+                set IS_FEATURE=true
+            )
+
+            echo Spring profile: !SPRING_PROFILES_ACTIVE!
+            echo Image tag: !IMAGE_TAG!
+            echo Deployment suffix: !DEPLOYMENT_SUFFIX!
+            echo Flags: IS_MASTER=!IS_MASTER!, IS_STAGE=!IS_STAGE!, IS_DEV=!IS_DEV!, IS_FEATURE=!IS_FEATURE!
+            """
+        }
+    }
+
+
         // stage('Checkout') {
         //     steps {
         //         checkout scm
@@ -193,7 +251,7 @@ stage('Trivy Vulnerability Scan & Report') {
                 }
             }
         }
-*/
+*/ /*
         stage('Levantar contenedores para pruebas') {
                     //when {
                       //  anyOf {
@@ -263,7 +321,7 @@ stage('Trivy Vulnerability Scan & Report') {
                             '''
                         }
                     }
-                }
+                }*/
 /*
         stage('Run Load Tests with Locust') {
             steps {
@@ -326,7 +384,7 @@ stage('Trivy Vulnerability Scan & Report') {
 
 
 */
-
+/*
         stage('OWASP ZAP Scan') {
             when { branch 'master' }
             steps {
@@ -375,7 +433,7 @@ stage('Trivy Vulnerability Scan & Report') {
                     ])
                 }
             }
-        }
+        }*/
 /*
     stage('Deploy Monitoring Stack') {
         steps {
