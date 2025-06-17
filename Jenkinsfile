@@ -13,6 +13,8 @@ pipeline {
         SERVICES = 'api-gateway cloud-config order-service payment-service product-service proxy-client service-discovery shipping-service user-service'
     }
 
+    stages{
+
     stage('compiling services') {
         when{
         anyOf {
