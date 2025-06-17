@@ -29,7 +29,7 @@ pipeline {
     // }
 
     // stage('Unit Tests & Coverage') {
-    //     when { branch 'stage' }
+    //     when { branch 'dev' }
     //     steps {
     //         bat """
     //         @echo off
@@ -87,6 +87,9 @@ pipeline {
         }
 */
         stage('Levantar contenedores para pruebas') {
+            when {
+                branch 'stage'
+            }
             steps {
                 script {
                     bat '''
@@ -150,7 +153,7 @@ pipeline {
                 }
             }
         }
-
+/*
         stage('Run Load Tests with Locust') {
             when {
                 branch 'stage'
@@ -201,9 +204,12 @@ pipeline {
                     }
                 }
             }
-        }
-/*
+        }*/
+
         stage('OWASP ZAP Scan') {
+            when {
+                            branch 'stage'
+                        }
             steps {
                 script {
                     echo '🔐 Iniciando escaneos con OWASP ZAP en Windows...'
@@ -249,7 +255,7 @@ pipeline {
                     ])
                 }
             }
-        }*/
+        }
 
         stage('Stop and Remove Containers') {
             when { branch 'stage' }
