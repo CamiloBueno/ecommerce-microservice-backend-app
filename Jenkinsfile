@@ -21,37 +21,37 @@ pipeline {
             @echo off
             setlocal EnableDelayedExpansion
 
-            echo Detected branch: %BRANCH_NAME%
+            echo Detected branch: !BRANCH_NAME!
 
             REM Simular diccionario profileConfig
             set SPRING_PROFILES_ACTIVE=dev
             set IMAGE_TAG=dev
             set DEPLOYMENT_SUFFIX=-dev
 
-            if "%BRANCH_NAME%"=="master" (
+            if "!BRANCH_NAME!"=="master" (
                 set SPRING_PROFILES_ACTIVE=prod
                 set IMAGE_TAG=prod
                 set DEPLOYMENT_SUFFIX=-prod
-            ) else if "%BRANCH_NAME%"=="stage" (
+            ) else if "!BRANCH_NAME!"=="stage" (
                 set SPRING_PROFILES_ACTIVE=stage
                 set IMAGE_TAG=stage
                 set DEPLOYMENT_SUFFIX=-stage
             )
 
             REM Flags
-            if "%BRANCH_NAME%"=="master" (
+            if "!BRANCH_NAME!"=="master" (
                 set IS_MASTER=true
             ) else (
                 set IS_MASTER=false
             )
 
-            if "%BRANCH_NAME%"=="stage" (
+            if "!BRANCH_NAME!"=="stage" (
                 set IS_STAGE=true
             ) else (
                 set IS_STAGE=false
             )
 
-            if "%BRANCH_NAME%"=="dev" (
+            if "!BRANCH_NAME!"=="dev" (
                 set IS_DEV=true
             ) else (
                 set IS_DEV=false
@@ -59,7 +59,7 @@ pipeline {
 
             REM startsWith simulation for 'feature/'
             set "IS_FEATURE=false"
-            echo %BRANCH_NAME% | findstr /B "feature/" >nul
+            echo !BRANCH_NAME! | findstr /B "feature/" >nul
             if !errorlevel! == 0 (
                 set IS_FEATURE=true
             )
@@ -71,6 +71,7 @@ pipeline {
             """
         }
     }
+
 
 
         // stage('Checkout') {
