@@ -68,9 +68,12 @@ pipeline {
             echo Image tag: !IMAGE_TAG!
             echo Deployment suffix: !DEPLOYMENT_SUFFIX!
             echo Flags: IS_MASTER=!IS_MASTER!, IS_STAGE=!IS_STAGE!, IS_DEV=!IS_DEV!, IS_FEATURE=!IS_FEATURE!
+
+            exit /b 0
             """
         }
     }
+
 
 
 
