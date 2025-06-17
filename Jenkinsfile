@@ -218,13 +218,13 @@ pipeline {
                         echo "🚨 Escaneando ${service.name} (${service.url}) con ZAP..."
 
                         bat """
-                            docker run --rm ^
-                                --network ecommerce-test ^
-                                -v "%CD%\\zap-reports:/zap/wrk" ^
-                                zaproxy/zap-stable zap-full-scan.py ^
-                                -t ${service.url} ^
-                                -r report-${service.name}.html ^
-                                -I
+                            ocker run --rm ^
+                              --network ecommerce-test ^
+                              -v /c/ProgramData/Jenkins/.jenkins/workspace/ecommerce-multibranch_master/zap-reports:/zap/wrk ^
+                              zaproxy/zap-stable zap-full-scan.py ^
+                              -t http://order-service-container:8300/order-service ^
+                              -r report-order-service.html ^
+                              -I
                         """
                     }
 
