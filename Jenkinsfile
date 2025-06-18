@@ -15,54 +15,54 @@ pipeline {
 
     stages{
 
-    // stage('compiling services') {
-    //     when {
-    //         anyOf {
-    //             branch 'dev'
-    //             branch 'stage'
-    //             branch 'master'
-    //         }
-    //     }
-    //     steps {
-    //         bat 'mvn clean package -DskipTests'
-    //     }
-    // }
+    stage('compiling services') {
+        when {
+            anyOf {
+                branch 'dev'
+                branch 'stage'
+                branch 'master'
+            }
+        }
+        steps {
+            bat 'mvn clean package -DskipTests'
+        }
+    }
 
-    // stage('Unit Tests & Coverage') {
-    //     when { branch 'dev' }
-    //     steps {
-    //         bat """
-    //         @echo off
-    //         set SERVICES=user-service product-service
-    //
-    //         for %%S in (%SERVICES%) do (
-    //             echo Running tests and generating coverage for %%S...
-    //             call mvn clean test jacoco:report -pl %%S
-    //         )
-    //         """
-    //
-    //         junit '**/target/surefire-reports/*.xml'
-    //
-    //         publishHTML(target: [
-    //             reportDir: 'user-service/target/site/jacoco',
-    //             reportFiles: 'index.html',
-    //             reportName: 'Cobertura user-service'
-    //         ])
-    //
-    //         publishHTML(target: [
-    //             reportDir: 'product-service/target/site/jacoco',
-    //             reportFiles: 'index.html',
-    //             reportName: 'Cobertura product-service'
-    //         ])
-    //     }
-    // }
+    stage('Unit Tests & Coverage') {
+        when { branch 'dev' }
+        steps {
+            bat """
+            @echo off
+            set SERVICES=user-service product-service
 
+            for %%S in (%SERVICES%) do (
+                echo Running tests and generating coverage for %%S...
+                call mvn clean test jacoco:report -pl %%S
+            )
+            """
 
+            junit '**/target/surefire-reports/*.xml'
+
+            publishHTML(target: [
+                reportDir: 'user-service/target/site/jacoco',
+                reportFiles: 'index.html',
+                reportName: 'Cobertura user-service'
+            ])
+
+            publishHTML(target: [
+                reportDir: 'product-service/target/site/jacoco',
+                reportFiles: 'index.html',
+                reportName: 'Cobertura product-service'
+            ])
+        }
+    }
 
 
 
 
-/*
+
+
+
         stage('Build Docker Images of each service') {
             steps {
                 script {
@@ -85,7 +85,7 @@ pipeline {
                 }
             }
         }
-*/
+
         stage('Levantar contenedores para pruebas') {
             when {
                 branch 'stage'
@@ -153,7 +153,7 @@ pipeline {
                 }
             }
         }
-/*
+
         stage('Run Load Tests with Locust') {
             when {
                 branch 'stage'
@@ -204,8 +204,8 @@ pipeline {
                     }
                 }
             }
-        }*/
-/*
+        }
+
         stage('OWASP ZAP Scan') {
             when {
                 branch 'stage'
@@ -225,7 +225,7 @@ pipeline {
                         [name: 'favourite-service', url: 'http://favourite-service-container:8800/favourite-service']
                     ]
 
-                    // Crear carpeta solo si no existe
+
                     bat """
                     if not exist "${outputDir}" mkdir "${outputDir}"
                     """
@@ -256,9 +256,9 @@ pipeline {
                     ])
                 }
             }
-        }*/
+        }
 
-/*
+
         stage('Stop and Remove Containers') {
             when { branch 'stage' }
             steps {
@@ -283,7 +283,7 @@ pipeline {
                 }
             }
         }
-*/
+
 
         stage('Waiting approval for deployment') {
             when { branch 'master' }
