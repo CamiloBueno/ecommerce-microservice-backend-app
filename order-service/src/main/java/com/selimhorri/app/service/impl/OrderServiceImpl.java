@@ -7,6 +7,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
+import com.selimhorri.app.config.feature.OrderFeatures;
 import com.selimhorri.app.dto.OrderDto;
 import com.selimhorri.app.exception.wrapper.OrderNotFoundException;
 import com.selimhorri.app.helper.OrderMappingHelper;
@@ -46,6 +47,12 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public OrderDto save(final OrderDto orderDto) {
 		log.info("*** OrderDto, service; save order *");
+
+		if (OrderFeatures.DISCOUNT_ON_ORDER_CREATION.isActive()) {
+			log.info("Feature flag ORDER_SERVICE_FEATURE is active");
+			orderDto.setOrderFee(orderDto.getOrderFee()-1000);;
+		} 
+
 		return OrderMappingHelper.map(this.orderRepository
 				.save(OrderMappingHelper.map(orderDto)));
 	}
